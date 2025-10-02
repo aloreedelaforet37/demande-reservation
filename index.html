@@ -90,51 +90,25 @@
   <p id="message"></p>
 
   <script>
-    // Horaires d'ouverture par jour (0 = dimanche, ..., 6 = samedi)
     const horaires = {
-      0: [ // Dimanche
-        { debut: "17:00", fin: "19:00" }
-      ],
-      1: [ // Lundi
-        { debut: "09:00", fin: "14:00" },
-        { debut: "17:00", fin: "19:00" }
-      ],
-      2: [ // Mardi
-        { debut: "09:00", fin: "14:00" },
-        { debut: "17:00", fin: "19:00" }
-      ],
-      3: [ // Mercredi
-        { debut: "09:00", fin: "14:00" },
-        { debut: "17:00", fin: "19:00" }
-      ],
-      4: [ // Jeudi
-        { debut: "09:00", fin: "14:00" },
-        { debut: "17:00", fin: "19:00" }
-      ],
-      5: [ // Vendredi
-        { debut: "09:00", fin: "14:00" },
-        { debut: "17:00", fin: "19:00" }
-      ],
-      6: [ // Samedi
-        { debut: "10:00", fin: "14:00" },
-        { debut: "17:00", fin: "19:00" }
-      ]
+      0: [ { debut: "17:00", fin: "19:00" } ], // Dimanche
+      1: [ { debut: "09:00", fin: "14:00" }, { debut: "17:00", fin: "19:00" } ], // Lundi
+      2: [ { debut: "09:00", fin: "14:00" }, { debut: "17:00", fin: "19:00" } ], // Mardi
+      3: [ { debut: "09:00", fin: "14:00" }, { debut: "17:00", fin: "19:00" } ], // Mercredi
+      4: [ { debut: "09:00", fin: "14:00" }, { debut: "17:00", fin: "19:00" } ], // Jeudi
+      5: [ { debut: "09:00", fin: "14:00" }, { debut: "17:00", fin: "19:00" } ], // Vendredi
+      6: [ { debut: "10:00", fin: "14:00" }, { debut: "17:00", fin: "19:00" } ]  // Samedi
     };
 
-    // Vérifie si l'heure choisie est dans une des plages d'ouverture du jour
     function checkHoraire(dateStr, timeStr) {
       if (!dateStr || !timeStr) return false;
-
       const date = new Date(`${dateStr}T${timeStr}`);
       const day = date.getDay();
       const plages = horaires[day];
-
       if (!plages || plages.length === 0) return false;
-
       return plages.some(plage => timeStr >= plage.debut && timeStr <= plage.fin);
     }
 
-    // Gestion du formulaire
     document.getElementById('bookingForm').addEventListener('submit', function (e) {
       e.preventDefault();
 
@@ -142,9 +116,12 @@
       const arrivalTime = document.getElementById('arrivalTime').value;
       const departureDate = document.getElementById('departureDate').value;
       const departureTime = document.getElementById('departureTime').value;
+      const ownerName = document.getElementById('ownerName').value;
+      const email = document.getElementById('email').value;
+      const authorizedPerson = document.getElementById('authorizedPerson').value;
+      const remarks = document.getElementById('remarks').value;
       const message = document.getElementById('message');
 
-      // Validation des horaires
       if (!checkHoraire(arrivalDate, arrivalTime)) {
         message.textContent = "⛔ L'heure d'arrivée est en dehors des horaires d'ouverture.";
         message.style.color = "red";
@@ -157,13 +134,41 @@
         return;
       }
 
-      // Tout est OK
-      message.textContent = "✅ Réservation validée (simulation).";
-      message.style.color = "green";
+      const data = {
+        ownerName,
+        email,
+        authorizedPerson,
+        arrivalDate,
+        arrivalTime,
+        departureDate,
+        departureTime,
+        remarks
+      };
 
-      // Ici tu pourrais envoyer les données à un Google Sheets, un email, etc.
+      const scriptURL = "https://script.google.com/macros/s/AKfycbxx-aKMyfLxsyk-zIHik0w_RSxI5QaMBcYELo0DEH2XSYe923kOHjM3vb0pzBosVxLZ1g/exec"; // 🔁 À remplacer par TON URL
+
+      fetch(scriptURL, {
+        method: "POST",
+        mode: "no-cors",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify(data)
+      })
+      .then(() => {
+        message.textContent = "✅ Réservation enregistrée avec succès.";
+        message.style.color = "green";
+        document.getElementById('bookingForm').reset();
+      })
+      .catch((error) => {
+        console.error("Erreur :", error);
+        message.textContent = "❌ Une erreur s'est produite.";
+        message.style.color = "red";
+      });
     });
   </script>
 
 </body>
 </html>
+
+
