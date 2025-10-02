@@ -281,10 +281,14 @@
     }
 
     // Envoi des données au Google Apps Script Web App
-    fetch("https://script.google.com/macros/s/AKfycbxeR4nPp5QwLFFZ6pYgEVdbtODNU6BdoiyffhA8nRrytyEzNUfHGAybPtiq46eSdFNyWA/exec", {
-      method: "POST",
-      body: new URLSearchParams(formData)
-    })
+      const scriptURL = "https://script.google.com/macros/s/AKfycbxeR4nPp5QwLFFZ6pYgEVdbtODNU6BdoiyffhA8nRrytyEzNUfHGAybPtiq46eSdFNyWA/exec";
+
+      fetch(scriptURL, {
+        method: "POST",
+        mode: "no-cors",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(data)
+      })
     .then(response => response.json())
     .then(data => {
       if (data.result === "success") {
@@ -311,4 +315,5 @@
 
 </body>
 </html>
+
 
