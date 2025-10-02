@@ -67,25 +67,25 @@
     <input type="email" id="email" name="email" required>
 
     <label for="authorizedPerson">👥 Personne habilitée à reprendre le(s) pensionnaire(s) :</label>
-    <input type="text" id="authorizedPerson" name="authorizedPerson" required>
+    <input type="text" id="authorizedPerson" name="authorizedPerson">
 
     <label for="animalCount">🐾 Nombre d'animaux :</label>
     <input type="number" id="animalCount" name="animalCount" min="1" required>
 
     <label for="animalNames">🐶 Nom(s) de vos compagnon(s) :</label>
-    <input type="text" id="animalNames" name="animalNames" placeholder="Ex : Rex, Minette..." required>
+    <input type="text" id="animalNames" name="animalNames" required>
 
     <label for="arrivalDate">📅 Date de début de séjour :</label>
     <input type="date" id="arrivalDate" name="arrivalDate" required>
 
     <label for="arrivalTime">⏰ Heure de début de séjour :</label>
-    <input type="time" id="arrivalTime" name="arrivalTime" required>
+    <input type="time" id="arrivalTime" name="arrivalTime" step="900" value="09:00" required>
 
     <label for="departureDate">📅 Date de fin de séjour :</label>
     <input type="date" id="departureDate" name="departureDate" required>
 
     <label for="departureTime">⏰ Heure de fin de séjour :</label>
-    <input type="time" id="departureTime" name="departureTime" required>
+    <input type="time" id="departureTime" name="departureTime" step="900" value="18:00" required>
 
     <label for="remarks">📝 Remarques :</label>
     <textarea id="remarks" name="remarks" rows="4" placeholder="Allergies, habitudes, instructions particulières..."></textarea>
@@ -107,6 +107,20 @@
       6: [ { debut: "10:00", fin: "14:00" }, { debut: "17:00", fin: "19:00" } ]
     };
 
+    // Bloquer les dates passées et préremplir les champs
+    window.addEventListener('DOMContentLoaded', () => {
+      const today = new Date().toISOString().split('T')[0];
+
+      const arrivalDateInput = document.getElementById('arrivalDate');
+      const departureDateInput = document.getElementById('departureDate');
+
+      arrivalDateInput.value = today;
+      departureDateInput.value = today;
+      arrivalDateInput.min = today;
+      departureDateInput.min = today;
+    });
+
+    // Vérifie si l'heure choisie est dans une des plages d'ouverture du jour
     function checkHoraire(dateStr, timeStr) {
       if (!dateStr || !timeStr) return false;
       const date = new Date(`${dateStr}T${timeStr}`);
@@ -123,14 +137,9 @@
       const arrivalTime = document.getElementById('arrivalTime').value;
       const departureDate = document.getElementById('departureDate').value;
       const departureTime = document.getElementById('departureTime').value;
-      const ownerName = document.getElementById('ownerName').value;
-      const email = document.getElementById('email').value;
-      const authorizedPerson = document.getElementById('authorizedPerson').value;
-      const animalCount = document.getElementById('animalCount').value;
-      const animalNames = document.getElementById('animalNames').value;
-      const remarks = document.getElementById('remarks').value;
       const message = document.getElementById('message');
 
+      // Vérifie que les horaires sont dans les créneaux d’ouverture
       if (!checkHoraire(arrivalDate, arrivalTime)) {
         message.textContent = "⛔ L'heure d'arrivée est en dehors des horaires d'ouverture.";
         message.style.color = "red";
@@ -143,27 +152,36 @@
         return;
       }
 
+      // Vérifie que l’arrivée est avant le départ
+      const start = new Date(`${arrivalDate}T${arrivalTime}`);
+      const end = new Date(`${departureDate}T${departureTime}`);
+      if (start >= end) {
+        message.textContent = "⛔ La date/heure d'arrivée doit être antérieure à celle du départ.";
+        message.style.color = "red";
+        return;
+      }
+
+      // Prépare les données à envoyer
       const data = {
-        ownerName,
-        email,
-        authorizedPerson,
-        animalCount,
-        animalNames,
+        ownerName: document.getElementById('ownerName').value,
+        email: document.getElementById('email').value,
+        authorizedPerson: document.getElementById('authorizedPerson').value,
+        animalCount: document.getElementById('animalCount').value,
+        animalNames: document.getElementById('animalNames').value,
         arrivalDate,
         arrivalTime,
         departureDate,
         departureTime,
-        remarks
+        remarks: document.getElementById('remarks').value
       };
 
-      const scriptURL = "https://script.google.com/macros/s/AKfycbxeR4nPp5QwLFFZ6pYgEVdbtODNU6BdoiyffhA8nRrytyEzNUfHGAybPtiq46eSdFNyWA/exec"; // 🔁 Remplace par ton URL
-       console.log(data);
+      // Remplace par l’URL de ton script Apps Script
+      const scriptURL = "https://script.google.com/macros/s/AKfycbxeR4nPp5QwLFFZ6pYgEVdbtODNU6BdoiyffhA8nRrytyEzNUfHGAybPtiq46eSdFNyWA/exec";
+
       fetch(scriptURL, {
         method: "POST",
         mode: "no-cors",
-        headers: {
-          "Content-Type": "application/json"
-        },
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify(data)
       })
       .then(() => {
@@ -181,6 +199,3 @@
 
 </body>
 </html>
-
-
-
