@@ -285,29 +285,28 @@
 
       fetch(scriptURL, {
         method: "POST",
-        mode: "no-cors",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(data)
       })
-    .then(response => response.json())
-    .then(data => {
-      if (data.result === "success") {
-        message.textContent = "✅ Réservation enregistrée avec succès.";
-        message.style.color = "green";
-        this.reset();
-
-        // Reset valeurs par défaut
-        initForm();
-
-      } else {
-        message.textContent = "❌ Erreur lors de l'enregistrement : " + (data.message || "Erreur inconnue");
+      .then(response => response.json())
+      .then(data => {
+        if (data.result === "success") {
+          message.textContent = "✅ Réservation enregistrée avec succès.";
+          message.style.color = "green";
+          this.reset();
+      
+          // Reset valeurs par défaut
+          initForm();
+      
+        } else {
+          message.textContent = "❌ Erreur lors de l'enregistrement : " + (data.message || "Erreur inconnue");
+          message.style.color = "red";
+        }
+      })
+      .catch(err => {
+        message.textContent = "❌ Erreur réseau ou serveur : " + err.message;
         message.style.color = "red";
-      }
-    })
-    .catch(err => {
-      message.textContent = "❌ Erreur réseau ou serveur : " + err.message;
-      message.style.color = "red";
-    });
+      });
   });
 
   window.addEventListener("load", initForm);
@@ -315,5 +314,6 @@
 
 </body>
 </html>
+
 
 
