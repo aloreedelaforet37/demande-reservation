@@ -1,48 +1,167 @@
 <!DOCTYPE html>
 <html lang="fr">
 <head>
-  <meta charset="UTF-8" />
-  <title>Formulaire vers Google Sheets</title>
+  <meta charset="UTF-8">
+  <title>Demande de réservation</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      max-width: 700px;
+      margin: 40px auto;
+      padding: 20px;
+      border: 1px solid #ddd;
+      border-radius: 10px;
+      background-color: #f9f9f9;
+    }
+
+    h2 {
+      text-align: center;
+      color: #333;
+    }
+
+    label {
+      font-weight: bold;
+      display: block;
+      margin-top: 10px;
+    }
+
+    input, textarea {
+      width: 100%;
+      padding: 8px;
+      margin: 6px 0 16px 0;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+      box-sizing: border-box;
+    }
+
+    button {
+      background-color: #4CAF50;
+      color: white;
+      padding: 10px 16px;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+      width: 100%;
+    }
+
+    button:hover {
+      background-color: #45a049;
+    }
+
+    #message {
+      text-align: center;
+      font-weight: bold;
+      margin-top: 20px;
+    }
+  </style>
 </head>
 <body>
 
-  <form id="contact-form">
-    <input type="text" name="nom" placeholder="Nom" required /><br/>
-    <input type="email" name="email" placeholder="Email" required /><br/>
-    <textarea name="message" placeholder="Message" required></textarea><br/>
-    <button type="submit">Envoyer</button>
+  <h2>Demande de réservation</h2>
+
+  <form id="bookingForm">
+    <label for="ownerName">👤 Nom et prénom du propriétaire :</label>
+    <input type="text" id="ownerName" name="ownerName" required>
+
+    <label for="email">📧 Email :</label>
+    <input type="email" id="email" name="email" required>
+
+    <label for="authorizedPerson">👥 Personne habilitée à reprendre le(s) pensionnaire(s) :</label>
+    <input type="text" id="authorizedPerson" name="authorizedPerson" required>
+
+    <label for="arrivalDate">📅 Date de début de séjour :</label>
+    <input type="date" id="arrivalDate" name="arrivalDate" required>
+
+    <label for="arrivalTime">⏰ Heure de début de séjour :</label>
+    <input type="time" id="arrivalTime" name="arrivalTime" required>
+
+    <label for="departureDate">📅 Date de fin de séjour :</label>
+    <input type="date" id="departureDate" name="departureDate" required>
+
+    <label for="departureTime">⏰ Heure de fin de séjour :</label>
+    <input type="time" id="departureTime" name="departureTime" required>
+
+    <label for="remarks">📝 Remarques :</label>
+    <textarea id="remarks" name="remarks" rows="4" placeholder="Allergies, habitudes, instructions particulières..."></textarea>
+
+    <button type="submit">Réserver</button>
   </form>
 
-  <p id="status"></p>
+  <p id="message"></p>
 
   <script>
-    const form = document.getElementById('contact-form');
-    const status = document.getElementById('status');
-    const scriptURL = 'https://script.google.com/macros/s/AKfycbwwzkKSfLYznSgOLbBvpCbKEVEvoujCNdS_W1A1XIyhfR3B4yZZ6yzzazZOCNFNViItPg/exec'; // remplace TON_SCRIPT_ID
+    // Horaires d'ouverture par jour (0 = dimanche, ..., 6 = samedi)
+    const horaires = {
+      0: [ // Dimanche
+        { debut: "17:00", fin: "19:00" }
+      ],
+      1: [ // Lundi
+        { debut: "09:00", fin: "14:00" },
+        { debut: "17:00", fin: "19:00" }
+      ],
+      2: [ // Mardi
+        { debut: "09:00", fin: "14:00" },
+        { debut: "17:00", fin: "19:00" }
+      ],
+      3: [ // Mercredi
+        { debut: "09:00", fin: "14:00" },
+        { debut: "17:00", fin: "19:00" }
+      ],
+      4: [ // Jeudi
+        { debut: "09:00", fin: "14:00" },
+        { debut: "17:00", fin: "19:00" }
+      ],
+      5: [ // Vendredi
+        { debut: "09:00", fin: "14:00" },
+        { debut: "17:00", fin: "19:00" }
+      ],
+      6: [ // Samedi
+        { debut: "10:00", fin: "14:00" },
+        { debut: "17:00", fin: "19:00" }
+      ]
+    };
 
-    form.addEventListener('submit', e => {
+    // Vérifie si l'heure choisie est dans une des plages d'ouverture du jour
+    function checkHoraire(dateStr, timeStr) {
+      if (!dateStr || !timeStr) return false;
+
+      const date = new Date(`${dateStr}T${timeStr}`);
+      const day = date.getDay();
+      const plages = horaires[day];
+
+      if (!plages || plages.length === 0) return false;
+
+      return plages.some(plage => timeStr >= plage.debut && timeStr <= plage.fin);
+    }
+
+    // Gestion du formulaire
+    document.getElementById('bookingForm').addEventListener('submit', function (e) {
       e.preventDefault();
-      status.textContent = "Envoi en cours...";
 
-      const formData = new FormData(form);
+      const arrivalDate = document.getElementById('arrivalDate').value;
+      const arrivalTime = document.getElementById('arrivalTime').value;
+      const departureDate = document.getElementById('departureDate').value;
+      const departureTime = document.getElementById('departureTime').value;
+      const message = document.getElementById('message');
 
-      fetch(scriptURL, {
-        method: 'POST',
-        body: new URLSearchParams(formData)
-      })
-      .then(response => response.json())
-      .then(data => {
-        if(data.status === "success") {
-          status.textContent = "✅ Message envoyé !";
-          form.reset();
-        } else {
-          status.textContent = "❌ Erreur lors de l'envoi.";
-        }
-      })
-      .catch(error => {
-        console.error("Erreur :", error);
-        status.textContent = "❌ Une erreur est survenue.";
-      });
+      // Validation des horaires
+      if (!checkHoraire(arrivalDate, arrivalTime)) {
+        message.textContent = "⛔ L'heure d'arrivée est en dehors des horaires d'ouverture.";
+        message.style.color = "red";
+        return;
+      }
+
+      if (!checkHoraire(departureDate, departureTime)) {
+        message.textContent = "⛔ L'heure de départ est en dehors des horaires d'ouverture.";
+        message.style.color = "red";
+        return;
+      }
+
+      // Tout est OK
+      message.textContent = "✅ Réservation validée (simulation).";
+      message.style.color = "green";
+
+      // Ici tu pourrais envoyer les données à un Google Sheets, un email, etc.
     });
   </script>
 
