@@ -1,8 +1,8 @@
 <!DOCTYPE html>
 <html lang="fr">
 <head>
-  <meta charset="UTF-8">
-  <title>Demande de réservation</title>
+  <meta charset="UTF-8" />
+  <title>Demande de réservation séjour canin</title>
   <style>
     body {
       font-family: Arial, sans-serif;
@@ -25,7 +25,7 @@
       margin-top: 10px;
     }
 
-    input, textarea {
+    input, select, textarea {
       width: 100%;
       padding: 8px;
       margin: 6px 0 16px 0;
@@ -57,35 +57,35 @@
 </head>
 <body>
 
-  <h2>Demande de réservation</h2>
+  <h2>Demande de réservation séjour canin</h2>
 
   <form id="bookingForm">
     <label for="ownerName">👤 Nom et prénom du propriétaire :</label>
-    <input type="text" id="ownerName" name="ownerName" required>
+    <input type="text" id="ownerName" name="ownerName" required />
 
     <label for="email">📧 Email :</label>
-    <input type="email" id="email" name="email" required>
+    <input type="email" id="email" name="email" required />
 
-    <label for="authorizedPerson">👥 Personne habilitée à reprendre le(s) pensionnaire(s) :</label>
-    <input type="text" id="authorizedPerson" name="authorizedPerson">
+    <label for="authorizedPerson">👥 Personne habilitée à reprendre le(s) pensionnaire(s) (Nom, Prénom, Téléphone) :</label>
+    <input type="text" id="authorizedPerson" name="authorizedPerson" required />
 
     <label for="animalCount">🐾 Nombre d'animaux :</label>
-    <input type="number" id="animalCount" name="animalCount" min="1" required>
+    <input type="number" id="animalCount" name="animalCount" min="1" required />
 
-    <label for="animalNames">🐶 Nom(s) de vos compagnon(s) :</label>
-    <input type="text" id="animalNames" name="animalNames" required>
+    <label for="animalNames">🐕 Nom de vos compagnons :</label>
+    <input type="text" id="animalNames" name="animalNames" placeholder="Noms séparés par des virgules" required />
 
     <label for="arrivalDate">📅 Date de début de séjour :</label>
-    <input type="date" id="arrivalDate" name="arrivalDate" required>
+    <input type="date" id="arrivalDate" name="arrivalDate" required />
 
     <label for="arrivalTime">⏰ Heure de début de séjour :</label>
-    <input type="time" id="arrivalTime" name="arrivalTime" step="900" value="09:00" required>
+    <select id="arrivalTime" name="arrivalTime" required></select>
 
     <label for="departureDate">📅 Date de fin de séjour :</label>
-    <input type="date" id="departureDate" name="departureDate" required>
+    <input type="date" id="departureDate" name="departureDate" required />
 
     <label for="departureTime">⏰ Heure de fin de séjour :</label>
-    <input type="time" id="departureTime" name="departureTime" step="900" value="18:00" required>
+    <select id="departureTime" name="departureTime" required></select>
 
     <label for="remarks">📝 Remarques :</label>
     <textarea id="remarks" name="remarks" rows="4" placeholder="Allergies, habitudes, instructions particulières..."></textarea>
@@ -96,26 +96,191 @@
   <p id="message"></p>
 
 <script>
+  // Horaires d'ouverture par jour (0 = dimanche, ..., 6 = samedi)
+  const horaires = {
+    0: [ // Dimanche
+      { debut: "17:00", fin: "19:00" }
+    ],
+    1: [ // Lundi
+      { debut: "09:00", fin: "14:00" },
+      { debut: "17:00", fin: "19:00" }
+    ],
+    2: [ // Mardi
+      { debut: "09:00", fin: "14:00" },
+      { debut: "17:00", fin: "19:00" }
+    ],
+    3: [ // Mercredi
+      { debut: "09:00", fin: "14:00" },
+      { debut: "17:00", fin: "19:00" }
+    ],
+    4: [ // Jeudi
+      { debut: "09:00", fin: "14:00" },
+      { debut: "17:00", fin: "19:00" }
+    ],
+    5: [ // Vendredi
+      { debut: "09:00", fin: "14:00" },
+      { debut: "17:00", fin: "19:00" }
+    ],
+    6: [ // Samedi
+      { debut: "10:00", fin: "14:00" },
+      { debut: "17:00", fin: "19:00" }
+    ]
+  };
+
+  // Fonction pour vérifier si l'heure est dans un créneau d'ouverture donné
+  function checkHoraire(dateStr, timeStr) {
+    if (!dateStr || !timeStr) return false;
+
+    const date = new Date(`${dateStr}T${timeStr}`);
+    const day = date.getDay();
+    const plages = horaires[day];
+    if (!plages || plages.length === 0) return false;
+
+    return plages.some(plage => timeStr >= plage.debut && timeStr <= plage.fin);
+  }
+
+  // Génère un tableau d'heures tous les 15 min entre 09:00 et 19:00
+  // puis filtre en fonction des horaires d'ouverture du jour passé en paramètre
+  function generateTimeOptions(day) {
+    const options = [];
+    const plages = horaires[day] || [];
+
+    // Parcours des plages pour générer les horaires valides
+    plages.forEach(plage => {
+      let [startH, startM] = plage.debut.split(':').map(Number);
+      let [endH, endM] = plage.fin.split(':').map(Number);
+
+      let startTotalMinutes = startH * 60 + startM;
+      let endTotalMinutes = endH * 60 + endM;
+
+      for(let min = startTotalMinutes; min <= endTotalMinutes; min += 15) {
+        let h = Math.floor(min / 60);
+        let m = min % 60;
+        let hh = h.toString().padStart(2, "0");
+        let mm = m.toString().padStart(2, "0");
+        options.push(`${hh}:${mm}`);
+      }
+    });
+
+    return options;
+  }
+
+  // Remplit les selects horaires pour une date donnée
+  function fillTimeSelects() {
+    const arrivalDateInput = document.getElementById("arrivalDate");
+    const departureDateInput = document.getElementById("departureDate");
+    const arrivalTimeSelect = document.getElementById("arrivalTime");
+    const departureTimeSelect = document.getElementById("departureTime");
+
+    // Fonction pour remplir un select avec options valides pour un jour donné
+    function fillSelect(selectElem, dateStr) {
+      selectElem.innerHTML = "";
+
+      if (!dateStr) return;
+
+      const day = new Date(dateStr).getDay();
+      const options = generateTimeOptions(day);
+
+      options.forEach(time => {
+        const option = document.createElement("option");
+        option.value = time;
+        option.textContent = time;
+        selectElem.appendChild(option);
+      });
+    }
+
+    fillSelect(arrivalTimeSelect, arrivalDateInput.value);
+    fillSelect(departureTimeSelect, departureDateInput.value);
+  }
+
+  // Définit la date minimale des dates = aujourd'hui
+  function setMinDate() {
+    const today = new Date();
+    const yyyy = today.getFullYear();
+    const mm = String(today.getMonth() + 1).padStart(2, "0");
+    const dd = String(today.getDate()).padStart(2, "0");
+    const minDateStr = `${yyyy}-${mm}-${dd}`;
+
+    document.getElementById("arrivalDate").setAttribute("min", minDateStr);
+    document.getElementById("departureDate").setAttribute("min", minDateStr);
+  }
+
+  // Initialise le formulaire avec valeurs par défaut et min date, remplit selects horaires
+  function initForm() {
+    const today = new Date();
+    const yyyy = today.getFullYear();
+    const mm = String(today.getMonth() + 1).padStart(2, "0");
+    const dd = String(today.getDate()).padStart(2, "0");
+    const dateStr = `${yyyy}-${mm}-${dd}`;
+
+    setMinDate();
+
+    // Date par défaut = aujourd'hui
+    document.getElementById("arrivalDate").value = dateStr;
+    document.getElementById("departureDate").value = dateStr;
+
+    fillTimeSelects();
+
+    // Heure par défaut : 09:00 pour arrivée, 18:00 pour départ (s’ils existent dans options)
+    const arrivalTimeSelect = document.getElementById("arrivalTime");
+    const departureTimeSelect = document.getElementById("departureTime");
+
+    if (Array.from(arrivalTimeSelect.options).some(opt => opt.value === "09:00")) {
+      arrivalTimeSelect.value = "09:00";
+    } else if (arrivalTimeSelect.options.length > 0) {
+      arrivalTimeSelect.value = arrivalTimeSelect.options[0].value;
+    }
+
+    if (Array.from(departureTimeSelect.options).some(opt => opt.value === "18:00")) {
+      departureTimeSelect.value = "18:00";
+    } else if (departureTimeSelect.options.length > 0) {
+      departureTimeSelect.value = departureTimeSelect.options[0].value;
+    }
+  }
+
+  document.getElementById("arrivalDate").addEventListener("change", () => {
+    fillTimeSelects();
+  });
+  document.getElementById("departureDate").addEventListener("change", () => {
+    fillTimeSelects();
+  });
+
+  // Validation et envoi du formulaire
   document.getElementById("bookingForm").addEventListener("submit", function(e) {
     e.preventDefault();
+
     const message = document.getElementById("message");
+    message.textContent = "";
 
     const formData = new FormData(this);
 
-    // Validation préalable (comme déjà présent dans le formulaire complet)
     const arrivalDate = formData.get("arrivalDate");
     const arrivalTime = formData.get("arrivalTime");
     const departureDate = formData.get("departureDate");
     const departureTime = formData.get("departureTime");
 
-    // Fonction validation déjà dans ton script, tu peux la copier ou refaire simple check ici
-    if (new Date(`${arrivalDate}T${arrivalTime}:00`) >= new Date(`${departureDate}T${departureTime}:00`)) {
+    // Vérifications horaires ouvertes
+    if (!checkHoraire(arrivalDate, arrivalTime)) {
+      message.textContent = "⛔ L'heure d'arrivée est en dehors des horaires d'ouverture.";
+      message.style.color = "red";
+      return;
+    }
+    if (!checkHoraire(departureDate, departureTime)) {
+      message.textContent = "⛔ L'heure de départ est en dehors des horaires d'ouverture.";
+      message.style.color = "red";
+      return;
+    }
+
+    // Vérifier que début < fin
+    const dtArrival = new Date(`${arrivalDate}T${arrivalTime}:00`);
+    const dtDeparture = new Date(`${departureDate}T${departureTime}:00`);
+    if (dtArrival >= dtDeparture) {
       message.textContent = "⛔ La date et l'heure de début doivent être avant celles de fin.";
       message.style.color = "red";
       return;
     }
 
-    // Envoi POST via fetch
+    // Envoi des données au Google Apps Script Web App
     fetch("https://script.google.com/macros/s/AKfycbxeR4nPp5QwLFFZ6pYgEVdbtODNU6BdoiyffhA8nRrytyEzNUfHGAybPtiq46eSdFNyWA/exec", {
       method: "POST",
       body: new URLSearchParams(formData)
@@ -125,30 +290,24 @@
       if (data.result === "success") {
         message.textContent = "✅ Réservation enregistrée avec succès.";
         message.style.color = "green";
-        document.getElementById("bookingForm").reset();
+        this.reset();
 
-        // Remettre les valeurs par défaut date et heure après reset
-        const today = new Date();
-        const yyyy = today.getFullYear();
-        const mm = String(today.getMonth() + 1).padStart(2, "0");
-        const dd = String(today.getDate()).padStart(2, "0");
-        document.getElementById("arrivalDate").value = `${yyyy}-${mm}-${dd}`;
-        document.getElementById("departureDate").value = `${yyyy}-${mm}-${dd}`;
-
-        document.getElementById("arrivalTime").value = "09:00";
-        document.getElementById("departureTime").value = "18:00";
+        // Reset valeurs par défaut
+        initForm();
 
       } else {
         message.textContent = "❌ Erreur lors de l'enregistrement : " + (data.message || "Erreur inconnue");
         message.style.color = "red";
       }
     })
-    .catch(error => {
-      message.textContent = "❌ Erreur réseau ou serveur : " + error.message;
+    .catch(err => {
+      message.textContent = "❌ Erreur réseau ou serveur : " + err.message;
       message.style.color = "red";
     });
   });
+
+  window.addEventListener("load", initForm);
 </script>
+
 </body>
 </html>
-
