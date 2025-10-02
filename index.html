@@ -67,13 +67,13 @@
     <input type="email" id="email" name="email" required />
 
     <label for="authorizedPerson">👥 Personne habilitée à reprendre le(s) pensionnaire(s) (Nom, Prénom, Téléphone) :</label>
-    <input type="text" id="authorizedPerson" name="authorizedPerson" required />
+    <input type="text" id="authorizedPerson" name="authorizedPerson"/>
 
     <label for="animalCount">🐾 Nombre d'animaux :</label>
     <input type="number" id="animalCount" name="animalCount" min="1" required />
 
     <label for="animalNames">🐕 Nom de vos compagnons :</label>
-    <input type="text" id="animalNames" name="animalNames" placeholder="Noms séparés par des virgules" required />
+    <input type="text" id="animalNames" name="animalNames" required />
 
     <label for="arrivalDate">📅 Date de début de séjour :</label>
     <input type="date" id="arrivalDate" name="arrivalDate" required />
@@ -88,7 +88,7 @@
     <select id="departureTime" name="departureTime" required></select>
 
     <label for="remarks">📝 Remarques :</label>
-    <textarea id="remarks" name="remarks" rows="4" placeholder="Allergies, habitudes, instructions particulières..."></textarea>
+    <textarea id="remarks" name="remarks" rows="4"></textarea>
 
     <button type="submit">Réserver</button>
   </form>
@@ -311,3 +311,4 @@
 
 </body>
 </html>
+
