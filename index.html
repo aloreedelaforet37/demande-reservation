@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <title>Formulaire vers Google Sheets</title>
+</head>
+<body>
+
+  <form id="contact-form">
+    <input type="text" name="nom" placeholder="Nom" required /><br/>
+    <input type="email" name="email" placeholder="Email" required /><br/>
+    <textarea name="message" placeholder="Message" required></textarea><br/>
+    <button type="submit">Envoyer</button>
+  </form>
+
+  <p id="status"></p>
+
+  <script>
+    const form = document.getElementById('contact-form');
+    const status = document.getElementById('status');
+    const scriptURL = 'https://script.google.com/macros/s/AKfycbwwzkKSfLYznSgOLbBvpCbKEVEvoujCNdS_W1A1XIyhfR3B4yZZ6yzzazZOCNFNViItPg/exec'; // remplace TON_SCRIPT_ID
+
+    form.addEventListener('submit', e => {
+      e.preventDefault();
+      status.textContent = "Envoi en cours...";
+
+      const formData = new FormData(form);
+
+      fetch(scriptURL, {
+        method: 'POST',
+        body: new URLSearchParams(formData)
+      })
+      .then(response => response.json())
+      .then(data => {
+        if(data.status === "success") {
+          status.textContent = "✅ Message envoyé !";
+          form.reset();
+        } else {
+          status.textContent = "❌ Erreur lors de l'envoi.";
+        }
+      })
+      .catch(error => {
+        console.error("Erreur :", error);
+        status.textContent = "❌ Une erreur est survenue.";
+      });
+    });
+  </script>
+
+</body>
+</html>
