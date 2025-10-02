@@ -95,107 +95,60 @@
 
   <p id="message"></p>
 
-  <script>
-    // Horaires d'ouverture par jour (0 = dimanche, ..., 6 = samedi)
-    const horaires = {
-      0: [ { debut: "17:00", fin: "19:00" } ],
-      1: [ { debut: "09:00", fin: "14:00" }, { debut: "17:00", fin: "19:00" } ],
-      2: [ { debut: "09:00", fin: "14:00" }, { debut: "17:00", fin: "19:00" } ],
-      3: [ { debut: "09:00", fin: "14:00" }, { debut: "17:00", fin: "19:00" } ],
-      4: [ { debut: "09:00", fin: "14:00" }, { debut: "17:00", fin: "19:00" } ],
-      5: [ { debut: "09:00", fin: "14:00" }, { debut: "17:00", fin: "19:00" } ],
-      6: [ { debut: "10:00", fin: "14:00" }, { debut: "17:00", fin: "19:00" } ]
-    };
+<script>
+  document.getElementById("bookingForm").addEventListener("submit", function(e) {
+    e.preventDefault();
+    const message = document.getElementById("message");
 
-    // Bloquer les dates passées et préremplir les champs
-    window.addEventListener('DOMContentLoaded', () => {
-      const today = new Date().toISOString().split('T')[0];
+    const formData = new FormData(this);
 
-      const arrivalDateInput = document.getElementById('arrivalDate');
-      const departureDateInput = document.getElementById('departureDate');
+    // Validation préalable (comme déjà présent dans le formulaire complet)
+    const arrivalDate = formData.get("arrivalDate");
+    const arrivalTime = formData.get("arrivalTime");
+    const departureDate = formData.get("departureDate");
+    const departureTime = formData.get("departureTime");
 
-      arrivalDateInput.value = today;
-      departureDateInput.value = today;
-      arrivalDateInput.min = today;
-      departureDateInput.min = today;
-    });
-
-    // Vérifie si l'heure choisie est dans une des plages d'ouverture du jour
-    function checkHoraire(dateStr, timeStr) {
-      if (!dateStr || !timeStr) return false;
-      const date = new Date(`${dateStr}T${timeStr}`);
-      const day = date.getDay();
-      const plages = horaires[day];
-      if (!plages || plages.length === 0) return false;
-      return plages.some(plage => timeStr >= plage.debut && timeStr <= plage.fin);
+    // Fonction validation déjà dans ton script, tu peux la copier ou refaire simple check ici
+    if (new Date(`${arrivalDate}T${arrivalTime}:00`) >= new Date(`${departureDate}T${departureTime}:00`)) {
+      message.textContent = "⛔ La date et l'heure de début doivent être avant celles de fin.";
+      message.style.color = "red";
+      return;
     }
 
-    document.getElementById('bookingForm').addEventListener('submit', function (e) {
-      e.preventDefault();
-
-      const arrivalDate = document.getElementById('arrivalDate').value;
-      const arrivalTime = document.getElementById('arrivalTime').value;
-      const departureDate = document.getElementById('departureDate').value;
-      const departureTime = document.getElementById('departureTime').value;
-      const message = document.getElementById('message');
-
-      // Vérifie que les horaires sont dans les créneaux d’ouverture
-      if (!checkHoraire(arrivalDate, arrivalTime)) {
-        message.textContent = "⛔ L'heure d'arrivée est en dehors des horaires d'ouverture.";
-        message.style.color = "red";
-        return;
-      }
-
-      if (!checkHoraire(departureDate, departureTime)) {
-        message.textContent = "⛔ L'heure de départ est en dehors des horaires d'ouverture.";
-        message.style.color = "red";
-        return;
-      }
-
-      // Vérifie que l’arrivée est avant le départ
-      const start = new Date(`${arrivalDate}T${arrivalTime}`);
-      const end = new Date(`${departureDate}T${departureTime}`);
-      if (start >= end) {
-        message.textContent = "⛔ La date/heure d'arrivée doit être antérieure à celle du départ.";
-        message.style.color = "red";
-        return;
-      }
-
-      // Prépare les données à envoyer
-      const data = {
-        ownerName: document.getElementById('ownerName').value,
-        email: document.getElementById('email').value,
-        authorizedPerson: document.getElementById('authorizedPerson').value,
-        animalCount: document.getElementById('animalCount').value,
-        animalNames: document.getElementById('animalNames').value,
-        arrivalDate,
-        arrivalTime,
-        departureDate,
-        departureTime,
-        remarks: document.getElementById('remarks').value
-      };
-
-      // Remplace par l’URL de ton script Apps Script
-      const scriptURL = "https://script.google.com/macros/s/AKfycbxeR4nPp5QwLFFZ6pYgEVdbtODNU6BdoiyffhA8nRrytyEzNUfHGAybPtiq46eSdFNyWA/exec";
-
-      fetch(scriptURL, {
-        method: "POST",
-        mode: "no-cors",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(data)
-      })
-      .then(() => {
+    // Envoi POST via fetch
+    fetch("https://script.google.com/macros/s/AKfycbxeR4nPp5QwLFFZ6pYgEVdbtODNU6BdoiyffhA8nRrytyEzNUfHGAybPtiq46eSdFNyWA/exec", {
+      method: "POST",
+      body: new URLSearchParams(formData)
+    })
+    .then(response => response.json())
+    .then(data => {
+      if (data.result === "success") {
         message.textContent = "✅ Réservation enregistrée avec succès.";
         message.style.color = "green";
-        document.getElementById('bookingForm').reset();
-      })
-      .catch((error) => {
-        console.error("Erreur :", error);
-        message.textContent = "❌ Une erreur s'est produite.";
-        message.style.color = "red";
-      });
-    });
-  </script>
+        document.getElementById("bookingForm").reset();
 
+        // Remettre les valeurs par défaut date et heure après reset
+        const today = new Date();
+        const yyyy = today.getFullYear();
+        const mm = String(today.getMonth() + 1).padStart(2, "0");
+        const dd = String(today.getDate()).padStart(2, "0");
+        document.getElementById("arrivalDate").value = `${yyyy}-${mm}-${dd}`;
+        document.getElementById("departureDate").value = `${yyyy}-${mm}-${dd}`;
+
+        document.getElementById("arrivalTime").value = "09:00";
+        document.getElementById("departureTime").value = "18:00";
+
+      } else {
+        message.textContent = "❌ Erreur lors de l'enregistrement : " + (data.message || "Erreur inconnue");
+        message.style.color = "red";
+      }
+    })
+    .catch(error => {
+      message.textContent = "❌ Erreur réseau ou serveur : " + error.message;
+      message.style.color = "red";
+    });
+  });
+</script>
 </body>
 </html>
+
