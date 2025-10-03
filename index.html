@@ -2,9 +2,8 @@
 <html lang="fr">
 <head>
   <meta charset="UTF-8" />
-  <title>Demande de réservation</title>
+  <title>Demande de réservation séjour canin</title>
   <style>
-    /* Ton CSS reste inchangé */
     body {
       font-family: Arial, sans-serif;
       max-width: 700px;
@@ -58,7 +57,7 @@
 </head>
 <body>
 
-  <h2>Demande de réservation</h2>
+  <h2>Demande de réservation séjour canin</h2>
 
   <form id="bookingForm">
     <label for="ownerName">👤 Nom et prénom du propriétaire :</label>
@@ -97,22 +96,38 @@
   <p id="message"></p>
 
 <script>
+  // Horaires d'ouverture par jour (0 = dimanche, ..., 6 = samedi)
   const horaires = {
-    0: [{ debut: "17:00", fin: "19:00" }],
-    1: [{ debut: "09:00", fin: "14:00" }, { debut: "17:00", fin: "19:00" }],
-    2: [{ debut: "09:00", fin: "14:00" }, { debut: "17:00", fin: "19:00" }],
-    3: [{ debut: "09:00", fin: "14:00" }, { debut: "17:00", fin: "19:00" }],
-    4: [{ debut: "09:00", fin: "14:00" }, { debut: "17:00", fin: "19:00" }],
-    5: [{ debut: "09:00", fin: "14:00" }, { debut: "17:00", fin: "19:00" }],
-    6: [{ debut: "10:00", fin: "14:00" }, { debut: "17:00", fin: "19:00" }]
+    0: [ // Dimanche
+      { debut: "17:00", fin: "19:00" }
+    ],
+    1: [ // Lundi
+      { debut: "09:00", fin: "14:00" },
+      { debut: "17:00", fin: "19:00" }
+    ],
+    2: [ // Mardi
+      { debut: "09:00", fin: "14:00" },
+      { debut: "17:00", fin: "19:00" }
+    ],
+    3: [ // Mercredi
+      { debut: "09:00", fin: "14:00" },
+      { debut: "17:00", fin: "19:00" }
+    ],
+    4: [ // Jeudi
+      { debut: "09:00", fin: "14:00" },
+      { debut: "17:00", fin: "19:00" }
+    ],
+    5: [ // Vendredi
+      { debut: "09:00", fin: "14:00" },
+      { debut: "17:00", fin: "19:00" }
+    ],
+    6: [ // Samedi
+      { debut: "10:00", fin: "14:00" },
+      { debut: "17:00", fin: "19:00" }
+    ]
   };
 
-  // Convertit "HH:MM" en minutes depuis minuit
-  function timeStrToMinutes(timeStr) {
-    const [h, m] = timeStr.split(":").map(Number);
-    return h * 60 + m;
-  }
-
+  // Vérifie si l'heure est dans les plages horaires autorisées
   function checkHoraire(dateStr, timeStr) {
     if (!dateStr || !timeStr) return false;
 
@@ -121,15 +136,10 @@
     const plages = horaires[day];
     if (!plages || plages.length === 0) return false;
 
-    const timeMinutes = timeStrToMinutes(timeStr);
-
-    return plages.some(plage => {
-      const debutMinutes = timeStrToMinutes(plage.debut);
-      const finMinutes = timeStrToMinutes(plage.fin);
-      return timeMinutes >= debutMinutes && timeMinutes <= finMinutes;
-    });
+    return plages.some(plage => timeStr >= plage.debut && timeStr <= plage.fin);
   }
 
+  // Génère les options horaires valides pour un jour donné (tous les 15 min)
   function generateTimeOptions(day) {
     const options = [];
     const plages = horaires[day] || [];
@@ -153,6 +163,7 @@
     return options;
   }
 
+  // Remplit les selects horaires en fonction des dates choisies
   function fillTimeSelects() {
     const arrivalDateInput = document.getElementById("arrivalDate");
     const departureDateInput = document.getElementById("departureDate");
@@ -179,6 +190,7 @@
     fillSelect(departureTimeSelect, departureDateInput.value);
   }
 
+  // Définit les dates min = aujourd'hui pour les inputs date
   function setMinDate() {
     const today = new Date();
     const yyyy = today.getFullYear();
@@ -190,6 +202,7 @@
     document.getElementById("departureDate").setAttribute("min", minDateStr);
   }
 
+  // Initialise le formulaire (dates par défaut, min, horaires)
   function initForm() {
     const today = new Date();
     const yyyy = today.getFullYear();
@@ -223,6 +236,7 @@
   document.getElementById("arrivalDate").addEventListener("change", fillTimeSelects);
   document.getElementById("departureDate").addEventListener("change", fillTimeSelects);
 
+  // Gestion de la soumission du formulaire
   document.getElementById("bookingForm").addEventListener("submit", function(e) {
     e.preventDefault();
 
@@ -236,6 +250,7 @@
     const departureDate = formData.get("departureDate");
     const departureTime = formData.get("departureTime");
 
+    // Vérifications horaires d'ouverture
     if (!checkHoraire(arrivalDate, arrivalTime)) {
       message.textContent = "⛔ L'heure d'arrivée est en dehors des horaires d'ouverture.";
       message.style.color = "red";
@@ -247,6 +262,7 @@
       return;
     }
 
+    // Vérifier que date+heure début < date+heure fin
     const dtArrival = new Date(`${arrivalDate}T${arrivalTime}:00`);
     const dtDeparture = new Date(`${departureDate}T${departureTime}:00`);
     if (dtArrival >= dtDeparture) {
@@ -255,19 +271,11 @@
       return;
     }
 
-    // Construire l'objet data à envoyer
-    const data = {
-      ownerName: formData.get("ownerName"),
-      email: formData.get("email"),
-      authorizedPerson: formData.get("authorizedPerson"),
-      animalCount: formData.get("animalCount"),
-      animalNames: formData.get("animalNames"),
-      arrivalDate,
-      arrivalTime,
-      departureDate,
-      departureTime,
-      remarks: formData.get("remarks")
-    };
+    // Création de l'objet data à envoyer en JSON
+    const data = {};
+    formData.forEach((value, key) => {
+      data[key] = value;
+    });
 
     const scriptURL = "https://script.google.com/macros/s/AKfycbzVna4egZp3NCgLeZ56yJjkm5e4JoNMSqd7wEEBXYXMwU9BM3Yi2Q0WFbwnD_QDnJXfjw/exec";
 
@@ -276,7 +284,10 @@
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(data)
     })
-    .then(response => response.json())
+    .then(response => {
+      if (!response.ok) throw new Error("Erreur HTTP " + response.status);
+      return response.json();
+    })
     .then(data => {
       if (data.result === "success") {
         message.textContent = "✅ Réservation enregistrée avec succès.";
@@ -299,6 +310,3 @@
 
 </body>
 </html>
-
-
-
