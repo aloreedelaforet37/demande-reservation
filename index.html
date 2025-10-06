@@ -1,318 +1,268 @@
+
 <!DOCTYPE html>
 <html lang="fr">
 <head>
-  <meta charset="UTF-8" />
-  <title>Demande de réservation séjour canin</title>
+  <meta charset="UTF-8">
+  <title>Réservation - À l'orée de la forêt</title>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Pacifico&family=Roboto&display=swap" rel="stylesheet">
   <style>
     body {
-      font-family: Arial, sans-serif;
-      max-width: 700px;
-      margin: 40px auto;
-      padding: 20px;
-      border: 1px solid #ddd;
-      border-radius: 10px;
-      background-color: #f9f9f9;
+      font-family: 'Roboto', sans-serif;
+      background: #e6f2ea url('https://www.transparenttextures.com/patterns/leaf.png') repeat;
+      display: flex;
+      justify-content: center;
+      padding: 2rem;
     }
-
-    h2 {
+    .form-container {
+      background: #fffaf0;
+      padding: 2rem 2.5rem;
+      border-radius: 25px;
+      box-shadow: 0 10px 25px rgba(0,0,0,0.15);
+      max-width: 650px;
+      width: 100%;
+      position: relative;
+    }
+    h1 {
+      font-family: 'Pacifico', cursive;
+      color: #4a3c31;
       text-align: center;
-      color: #333;
+      margin-bottom: 2rem;
+      position: relative;
     }
-
-    label {
-      font-weight: bold;
+    h1::after {
+      content: '🐶🌿';
       display: block;
-      margin-top: 10px;
+      font-size: 1.5rem;
+      margin-top: 0.5rem;
     }
-
-    input, select, textarea {
+    label {
+      display: block;
+      margin-top: 1rem;
+      color: #5c4431;
+    }
+    input, select, textarea, button {
       width: 100%;
-      padding: 8px;
-      margin: 6px 0 16px 0;
-      border: 1px solid #ccc;
-      border-radius: 4px;
-      box-sizing: border-box;
+      padding: 0.6rem;
+      margin-top: 0.3rem;
+      border-radius: 12px;
+      border: 1px solid #c8b29a;
+      font-size: 1rem;
+      font-family: inherit;
     }
-
+    textarea { resize: vertical; min-height: 80px; }
     button {
-      background-color: #4CAF50;
+      background: linear-gradient(135deg,#8bbf91,#6ca774);
       color: white;
-      padding: 10px 16px;
       border: none;
-      border-radius: 4px;
+      margin-top: 1.5rem;
       cursor: pointer;
-      width: 100%;
-    }
-
-    button:hover {
-      background-color: #45a049;
-    }
-
-    #message {
-      text-align: center;
       font-weight: bold;
-      margin-top: 20px;
+      font-size: 1.1rem;
+      transition: all 0.3s ease;
+    }
+    button:hover {
+      background: linear-gradient(135deg,#6ca774,#558e61);
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+    }
+    #message {
+      margin-top: 1rem;
+      font-weight: bold;
+      text-align: center;
+    }
+    .success { color: #2e7d32; }
+    .error { color: #b71c1c; }
+    /* petites icônes décoratives */
+    .form-container::before {
+      content: '🐾';
+      position: absolute;
+      top: -10px;
+      left: -10px;
+      font-size: 2rem;
+    }
+    .form-container::after {
+      content: '🌿';
+      position: absolute;
+      bottom: -10px;
+      right: -10px;
+      font-size: 2rem;
     }
   </style>
 </head>
 <body>
+  <div class="form-container">
+    <h1>À l'orée de la forêt</h1>
 
-  <h2>Demande de réservation séjour canin</h2>
+    <form id="reservationForm">
+      <label>Nom du propriétaire
+        <input type="text" name="nom_proprietaire" required>
+      </label>
 
-  <form id="bookingForm">
-    <label for="ownerName">👤 Nom et prénom du propriétaire :</label>
-    <input type="text" id="ownerName" name="ownerName" required />
+      <label>Email
+        <input type="email" name="email" required>
+      </label>
 
-    <label for="email">📧 Email :</label>
-    <input type="email" id="email" name="email" required />
+      <label>Personne autorisée
+        <input type="text" name="personne_autorisee">
+      </label>
 
-    <label for="authorizedPerson">👥 Personne habilitée à reprendre le(s) pensionnaire(s) (Nom, Prénom, Téléphone) :</label>
-    <input type="text" id="authorizedPerson" name="authorizedPerson"/>
+      <label>Nombre d’animaux
+        <input type="number" name="nb_animal" min="1" required>
+      </label>
 
-    <label for="animalCount">🐾 Nombre d'animaux :</label>
-    <input type="number" id="animalCount" name="animalCount" min="1" required />
+      <label>Nom des animaux
+        <input type="text" name="nom_animaux">
+      </label>
 
-    <label for="animalNames">🐕 Nom de vos compagnons :</label>
-    <input type="text" id="animalNames" name="animalNames" required />
+      <label>Date d’arrivée
+        <input type="date" id="dateArrivee" name="date_arrivee" required>
+      </label>
 
-    <label for="arrivalDate">📅 Date de début de séjour :</label>
-    <input type="date" id="arrivalDate" name="arrivalDate" required />
+      <label>Heure d’arrivée
+        <select id="heureArrivee" name="heure_arrivee" required></select>
+      </label>
 
-    <label for="arrivalTime">⏰ Heure de début de séjour :</label>
-    <select id="arrivalTime" name="arrivalTime" required></select>
+      <label>Date de départ
+        <input type="date" id="dateDepart" name="date_depart" required>
+      </label>
 
-    <label for="departureDate">📅 Date de fin de séjour :</label>
-    <input type="date" id="departureDate" name="departureDate" required />
+      <label>Heure de départ
+        <select id="heureDepart" name="heure_depart" required></select>
+      </label>
 
-    <label for="departureTime">⏰ Heure de fin de séjour :</label>
-    <select id="departureTime" name="departureTime" required></select>
+      <label>Remarque
+        <textarea name="remarque"></textarea>
+      </label>
 
-    <label for="remarks">📝 Remarques :</label>
-    <textarea id="remarks" name="remarks" rows="4"></textarea>
+      <button type="submit">Envoyer la réservation</button>
+    </form>
 
-    <button type="submit">Réserver</button>
-  </form>
+    <div id="message"></div>
+  </div>
 
-  <p id="message"></p>
+  <script>
+const SUPABASE_URL='https://usatdvopaaxrxjiqhgju.supabase.co';
+  const SUPABASE_ANON_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InVzYXRkdm9wYWF4cnhqaXFoZ2p1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTk1MjUzNDUsImV4cCI6MjA3NTEwMTM0NX0.D52GPw5yZUJWN1oZD_sop7F7nU9WZLM5OMof1TI3IMc';
+    const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-<script>
-  // Horaires d'ouverture par jour (0 = dimanche, ..., 6 = samedi)
-  const horaires = {
-    0: [ // Dimanche
-      { debut: "17:00", fin: "19:00" }
-    ],
-    1: [ // Lundi
-      { debut: "09:00", fin: "14:00" },
-      { debut: "17:00", fin: "19:00" }
-    ],
-    2: [ // Mardi
-      { debut: "09:00", fin: "14:00" },
-      { debut: "17:00", fin: "19:00" }
-    ],
-    3: [ // Mercredi
-      { debut: "09:00", fin: "14:00" },
-      { debut: "17:00", fin: "19:00" }
-    ],
-    4: [ // Jeudi
-      { debut: "09:00", fin: "14:00" },
-      { debut: "17:00", fin: "19:00" }
-    ],
-    5: [ // Vendredi
-      { debut: "09:00", fin: "14:00" },
-      { debut: "17:00", fin: "19:00" }
-    ],
-    6: [ // Samedi
-      { debut: "10:00", fin: "14:00" },
-      { debut: "17:00", fin: "19:00" }
-    ]
-  };
+    const form = document.getElementById("reservationForm");
+    const message = document.getElementById("message");
+    const dateArriveeInput = document.getElementById("dateArrivee");
+    const dateDepartInput = document.getElementById("dateDepart");
+    const heureArriveeSelect = document.getElementById("heureArrivee");
+    const heureDepartSelect = document.getElementById("heureDepart");
 
-  // Fonction pour vérifier si l'heure est dans un créneau d'ouverture donné
-  function checkHoraire(dateStr, timeStr) {
-    if (!dateStr || !timeStr) return false;
+    function getToday() {
+      const today = new Date();
+      const yyyy = today.getFullYear();
+      const mm = String(today.getMonth()+1).padStart(2,'0');
+      const dd = String(today.getDate()).padStart(2,'0');
+      return `${yyyy}-${mm}-${dd}`;
+    }
 
-    const date = new Date(`${dateStr}T${timeStr}`);
-    const day = date.getDay();
-    const plages = horaires[day];
-    if (!plages || plages.length === 0) return false;
-
-    return plages.some(plage => timeStr >= plage.debut && timeStr <= plage.fin);
-  }
-
-  // Génère un tableau d'heures tous les 15 min entre 09:00 et 19:00
-  // puis filtre en fonction des horaires d'ouverture du jour passé en paramètre
-  function generateTimeOptions(day) {
-    const options = [];
-    const plages = horaires[day] || [];
-
-    // Parcours des plages pour générer les horaires valides
-    plages.forEach(plage => {
-      let [startH, startM] = plage.debut.split(':').map(Number);
-      let [endH, endM] = plage.fin.split(':').map(Number);
-
-      let startTotalMinutes = startH * 60 + startM;
-      let endTotalMinutes = endH * 60 + endM;
-
-      for(let min = startTotalMinutes; min <= endTotalMinutes; min += 15) {
-        let h = Math.floor(min / 60);
-        let m = min % 60;
-        let hh = h.toString().padStart(2, "0");
-        let mm = m.toString().padStart(2, "0");
-        options.push(`${hh}:${mm}`);
+    function getOpeningHours(day){
+      switch(day){
+        case 0: return [{start:"17:00",end:"19:00"}];
+        case 6: return [{start:"10:00",end:"12:00"}];
+        default: return [{start:"09:00",end:"14:00"},{start:"17:00",end:"19:00"}];
       }
-    });
+    }
 
-    return options;
-  }
+    function generateTimeOptions(day){
+      const ranges = getOpeningHours(day);
+      const options = [];
+      ranges.forEach(r=>{
+        let [h,m] = r.start.split(":").map(Number);
+        const [endH,endM] = r.end.split(":").map(Number);
+        while(h<endH||(h===endH && m<endM)){
+          const hh=String(h).padStart(2,"0");
+          const mm=String(m).padStart(2,"0");
+          options.push(`${hh}:${mm}`);
+          m+=15;
+          if(m>=60){ m=0; h++; }
+        }
+      });
+      return options;
+    }
 
-  // Remplit les selects horaires pour une date donnée
-  function fillTimeSelects() {
-    const arrivalDateInput = document.getElementById("arrivalDate");
-    const departureDateInput = document.getElementById("departureDate");
-    const arrivalTimeSelect = document.getElementById("arrivalTime");
-    const departureTimeSelect = document.getElementById("departureTime");
-
-    // Fonction pour remplir un select avec options valides pour un jour donné
-    function fillSelect(selectElem, dateStr) {
-      selectElem.innerHTML = "";
-
-      if (!dateStr) return;
-
-      const day = new Date(dateStr).getDay();
-      const options = generateTimeOptions(day);
-
-      options.forEach(time => {
-        const option = document.createElement("option");
-        option.value = time;
-        option.textContent = time;
-        selectElem.appendChild(option);
+    function updateHourOptions(dateInput, selectInput){
+      const date = new Date(dateInput.value);
+      if(isNaN(date)) return;
+      const day = date.getDay();
+      const times = generateTimeOptions(day);
+      selectInput.innerHTML="";
+      times.forEach(t=>{
+        const opt=document.createElement("option");
+        opt.value=t;
+        opt.textContent=t;
+        selectInput.appendChild(opt);
       });
     }
 
-    fillSelect(arrivalTimeSelect, arrivalDateInput.value);
-    fillSelect(departureTimeSelect, departureDateInput.value);
-  }
+    const todayStr = getToday();
+    dateArriveeInput.value = todayStr;
+    dateArriveeInput.min = todayStr;
+    dateDepartInput.value = todayStr;
+    dateDepartInput.min = todayStr;
 
-  // Définit la date minimale des dates = aujourd'hui
-  function setMinDate() {
-    const today = new Date();
-    const yyyy = today.getFullYear();
-    const mm = String(today.getMonth() + 1).padStart(2, "0");
-    const dd = String(today.getDate()).padStart(2, "0");
-    const minDateStr = `${yyyy}-${mm}-${dd}`;
+    updateHourOptions(dateArriveeInput, heureArriveeSelect);
+    updateHourOptions(dateDepartInput, heureDepartSelect);
 
-    document.getElementById("arrivalDate").setAttribute("min", minDateStr);
-    document.getElementById("departureDate").setAttribute("min", minDateStr);
-  }
-
-  // Initialise le formulaire avec valeurs par défaut et min date, remplit selects horaires
-  function initForm() {
-    const today = new Date();
-    const yyyy = today.getFullYear();
-    const mm = String(today.getMonth() + 1).padStart(2, "0");
-    const dd = String(today.getDate()).padStart(2, "0");
-    const dateStr = `${yyyy}-${mm}-${dd}`;
-
-    setMinDate();
-
-    // Date par défaut = aujourd'hui
-    document.getElementById("arrivalDate").value = dateStr;
-    document.getElementById("departureDate").value = dateStr;
-
-    fillTimeSelects();
-
-    // Heure par défaut : 09:00 pour arrivée, 18:00 pour départ (s’ils existent dans options)
-    const arrivalTimeSelect = document.getElementById("arrivalTime");
-    const departureTimeSelect = document.getElementById("departureTime");
-
-    if (Array.from(arrivalTimeSelect.options).some(opt => opt.value === "09:00")) {
-      arrivalTimeSelect.value = "09:00";
-    } else if (arrivalTimeSelect.options.length > 0) {
-      arrivalTimeSelect.value = arrivalTimeSelect.options[0].value;
-    }
-
-    if (Array.from(departureTimeSelect.options).some(opt => opt.value === "18:00")) {
-      departureTimeSelect.value = "18:00";
-    } else if (departureTimeSelect.options.length > 0) {
-      departureTimeSelect.value = departureTimeSelect.options[0].value;
-    }
-  }
-
-  document.getElementById("arrivalDate").addEventListener("change", () => {
-    fillTimeSelects();
-  });
-  document.getElementById("departureDate").addEventListener("change", () => {
-    fillTimeSelects();
-  });
-
-  // Validation et envoi du formulaire
-  document.getElementById("bookingForm").addEventListener("submit", function(e) {
-    e.preventDefault();
-
-    const message = document.getElementById("message");
-    message.textContent = "";
-
-    const formData = new FormData(this);
-
-    const arrivalDate = formData.get("arrivalDate");
-    const arrivalTime = formData.get("arrivalTime");
-    const departureDate = formData.get("departureDate");
-    const departureTime = formData.get("departureTime");
-
-    // Vérifications horaires ouvertes
-    if (!checkHoraire(arrivalDate, arrivalTime)) {
-      message.textContent = "⛔ L'heure d'arrivée est en dehors des horaires d'ouverture.";
-      message.style.color = "red";
-      return;
-    }
-    if (!checkHoraire(departureDate, departureTime)) {
-      message.textContent = "⛔ L'heure de départ est en dehors des horaires d'ouverture.";
-      message.style.color = "red";
-      return;
-    }
-
-    // Vérifier que début < fin
-    const dtArrival = new Date(`${arrivalDate}T${arrivalTime}:00`);
-    const dtDeparture = new Date(`${departureDate}T${departureTime}:00`);
-    if (dtArrival >= dtDeparture) {
-      message.textContent = "⛔ La date et l'heure de début doivent être avant celles de fin.";
-      message.style.color = "red";
-      return;
-    }
-
-    // Envoi des données au Google Apps Script Web App
-      const scriptURL = "https://script.google.com/macros/s/AKfycbxeR4nPp5QwLFFZ6pYgEVdbtODNU6BdoiyffhA8nRrytyEzNUfHGAybPtiq46eSdFNyWA/exec";
-
-      fetch(scriptURL, {
-        method: "POST",
-        mode: "no-cors",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(data)
-      })
-    .then(response => response.json())
-    .then(data => {
-      if (data.result === "success") {
-        message.textContent = "✅ Réservation enregistrée avec succès.";
-        message.style.color = "green";
-        this.reset();
-
-        // Reset valeurs par défaut
-        initForm();
-
-      } else {
-        message.textContent = "❌ Erreur lors de l'enregistrement : " + (data.message || "Erreur inconnue");
-        message.style.color = "red";
+    function validateDatesAndHours(){
+      const arrivalDate = new Date(dateArriveeInput.value+"T"+heureArriveeSelect.value);
+      const departureDate = new Date(dateDepartInput.value+"T"+heureDepartSelect.value);
+      if(departureDate <= arrivalDate){
+        message.textContent="❌ La date/heure de départ doit être postérieure à l'arrivée.";
+        message.className="error";
+        return false;
       }
-    })
-    .catch(err => {
-      message.textContent = "❌ Erreur réseau ou serveur : " + err.message;
-      message.style.color = "red";
+      message.textContent="";
+      return true;
+    }
+
+    dateArriveeInput.addEventListener("change", ()=>{
+      updateHourOptions(dateArriveeInput, heureArriveeSelect);
+      dateDepartInput.min=dateArriveeInput.value;
+      validateDatesAndHours();
     });
-  });
+    heureArriveeSelect.addEventListener("change",validateDatesAndHours);
+    dateDepartInput.addEventListener("change",()=>{
+      updateHourOptions(dateDepartInput, heureDepartSelect);
+      validateDatesAndHours();
+    });
+    heureDepartSelect.addEventListener("change",validateDatesAndHours);
 
-  window.addEventListener("load", initForm);
-</script>
+    form.addEventListener("submit", async e=>{
+      e.preventDefault();
+      if(!validateDatesAndHours()) return;
 
+      message.textContent="Envoi en cours...";
+      const formData = new FormData(form);
+      const reservation = Object.fromEntries(formData.entries());
+
+      try{
+        const {data,error} = await supabaseClient
+          .from("reservations")
+          .insert([reservation])
+          .select();
+        if(error){
+          message.textContent="❌ Erreur : "+error.message;
+          message.className="error";
+        } else{
+          message.textContent="✅ Réservation enregistrée avec succès !";
+          message.className="success";
+          form.reset();
+          dateArriveeInput.value = todayStr;
+          dateDepartInput.value = todayStr;
+          updateHourOptions(dateArriveeInput, heureArriveeSelect);
+          updateHourOptions(dateDepartInput, heureDepartSelect);
+        }
+      }catch(err){
+        message.textContent="⚡ Exception : "+err.message;
+        message.className="error";
+      }
+    });
+  </script>
 </body>
 </html>
-
