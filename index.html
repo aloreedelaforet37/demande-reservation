@@ -1,108 +1,169 @@
 <!DOCTYPE html>
 <html lang="fr">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Réservation - À l'orée de la forêt</title>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Réservation - À l'Orée de la Forêt</title>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-  <link href="https://fonts.googleapis.com/css2?family=Pacifico&family=Roboto&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Pacifico&family=Roboto:wght@300;400;500&display=swap" rel="stylesheet" />
   <style>
+    :root {
+      --vert-clair: #9ec8a7;
+      --vert-fonce: #5c8a63;
+      --beige-fond: #fffaf0;
+      --brun-texte: #4a3c31;
+    }
+
     body {
       font-family: 'Roboto', sans-serif;
-      background: #e6f2ea url('https://www.transparenttextures.com/patterns/leaf.png') repeat;
+      background: linear-gradient(to bottom right, #e6f2ea, #d2e5d7);
+      min-height: 100vh;
       display: flex;
       justify-content: center;
-      padding: 1rem;
+      align-items: center;
+      padding: 2rem;
     }
+
     .form-container {
-      background: #fffaf0;
-      padding: 1.5rem 2rem;
-      border-radius: 20px;
-      box-shadow: 0 8px 20px rgba(0,0,0,0.1);
-      max-width: 500px;
+      background: var(--beige-fond);
+      border-radius: 24px;
+      box-shadow: 0 8px 25px rgba(0,0,0,0.1);
+      max-width: 520px;
       width: 100%;
+      padding: 2rem 2.5rem;
       text-align: center;
+      transition: transform 0.3s ease, box-shadow 0.3s ease;
     }
+
+    .form-container:hover {
+      transform: translateY(-4px);
+      box-shadow: 0 12px 30px rgba(0,0,0,0.15);
+    }
+
     .form-container img {
-      max-width: 160px;
+      max-width: 140px;
       height: auto;
       margin-bottom: 1rem;
     }
+
     h1 {
-      font-family: 'Roboto', sans-serif;
-      color: #4a3c31;
-      text-align: center;
-      margin-bottom: 1.5rem;
-      font-size: 2rem;
+      font-family: 'Pacifico', cursive;
+      color: var(--brun-texte);
+      margin-bottom: 1rem;
+      font-size: 1.9rem;
     }
+
+    p.subtitle {
+      font-size: 1rem;
+      color: #6b5849;
+      margin-bottom: 1.5rem;
+    }
+
     label {
       display: block;
-      margin-top: 1rem;
-      color: #5c4431;
-      font-size: 1rem;
       text-align: left;
+      color: var(--brun-texte);
+      font-weight: 500;
+      margin-top: 1rem;
+      margin-bottom: 0.3rem;
     }
-    input, select, textarea, button {
+
+    input, select, textarea {
       width: 100%;
-      padding: 0.6rem;
-      margin-top: 0.3rem;
+      padding: 0.7rem 0.9rem;
       border-radius: 12px;
-      border: 1px solid #c8b29a;
+      border: 1px solid #c9b6a4;
+      background-color: #fff;
       font-size: 1rem;
-      font-family: inherit;
+      transition: all 0.25s ease;
       box-sizing: border-box;
     }
-    textarea { resize: vertical; min-height: 80px; }
+
+    input:focus, select:focus, textarea:focus {
+      border-color: var(--vert-fonce);
+      outline: none;
+      box-shadow: 0 0 6px rgba(92,138,99,0.4);
+    }
+
+    textarea {
+      resize: vertical;
+      min-height: 80px;
+    }
+
     button {
-      background: linear-gradient(135deg,#8bbf91,#6ca774);
+      background: linear-gradient(135deg, var(--vert-clair), var(--vert-fonce));
       color: white;
       border: none;
-      margin-top: 1.5rem;
-      cursor: pointer;
-      font-weight: bold;
+      padding: 0.8rem 1rem;
+      border-radius: 14px;
       font-size: 1.1rem;
+      font-weight: bold;
+      margin-top: 1.8rem;
+      width: 100%;
+      cursor: pointer;
       transition: all 0.3s ease;
     }
+
     button:hover {
-      background: linear-gradient(135deg,#6ca774,#558e61);
+      background: linear-gradient(135deg, var(--vert-fonce), #4b7552);
       transform: translateY(-2px);
-      box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+      box-shadow: 0 6px 15px rgba(0,0,0,0.2);
     }
+
     #message {
       margin-top: 1rem;
-      font-weight: bold;
-      text-align: center;
+      font-weight: 500;
     }
+
     .success { color: #2e7d32; }
     .error { color: #b71c1c; }
 
-    @media (max-width: 400px) {
-      h1 { font-size: 1.5rem; }
+    @media (max-width: 500px) {
+      .form-container {
+        padding: 1.5rem 1.3rem;
+      }
+      h1 { font-size: 1.6rem; }
       input, select, textarea, button { font-size: 0.95rem; }
-      .form-container { padding: 1rem 1.2rem; }
     }
   </style>
 </head>
 <body>
   <div class="form-container">
-    <!-- Logo -->
-    <img src="logo.png" alt="Logo À l'orée de la forêt">
-
-    <h1>À l'Orée de la Forêt<br/>
-        Demande de réservation </h1>
+    <img src="logo.png" alt="Logo À l'Orée de la Forêt" />
+    <h1>À l'Orée de la Forêt</h1>
+    <p class="subtitle">Demande de réservation</p>
 
     <form id="reservationForm">
-      <label>Nom et prénom du propriétaire<input type="text" name="nom_proprietaire" required></label>
-      <label>Email<input type="email" name="email" required></label>
-      <label>Nombre de chiens<input type="number" name="nb_animal" min="1" required></label>
-      <label>Nom du(des) chien(s)<input type="text" name="nom_animaux"></label>
-      <label>Date d’arrivée<input type="date" id="dateArrivee" name="date_arrivee" required></label>
-      <label>Heure d’arrivée<select id="heureArrivee" name="heure_arrivee" required></select></label>
-      <label>Date de départ<input type="date" id="dateDepart" name="date_depart" required></label>
-      <label>Heure de départ<select id="heureDepart" name="heure_depart" required></select></label>
-      <label>Remarque<textarea name="remarque"></textarea></label>
+      <label>Nom et prénom du propriétaire</label>
+      <input type="text" name="nom_proprietaire" required />
+
+      <label>Email</label>
+      <input type="email" name="email" required />
+
+      <label>Nombre de chiens</label>
+      <input type="number" name="nb_animal" min="1" required />
+
+      <label>Nom du(des) chien(s)</label>
+      <input type="text" name="nom_animaux" />
+
+      <label>Date d’arrivée</label>
+      <input type="date" id="dateArrivee" name="date_arrivee" required />
+
+      <label>Heure d’arrivée</label>
+      <select id="heureArrivee" name="heure_arrivee" required></select>
+
+      <label>Date de départ</label>
+      <input type="date" id="dateDepart" name="date_depart" required />
+
+      <label>Heure de départ</label>
+      <select id="heureDepart" name="heure_depart" required></select>
+
+      <label>Remarque</label>
+      <textarea name="remarque"></textarea>
+
       <button type="submit">Envoyer la réservation</button>
     </form>
+
     <div id="message"></div>
   </div>
 
