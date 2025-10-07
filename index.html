@@ -144,7 +144,7 @@
       <input type="number" name="nb_animal" min="1" required />
 
       <label>Nom du(des) chien(s)</label>
-      <input type="text" name="nom_animaux" />
+      <div id="nomsChiensContainer"></div>
 
       <label>Date d’arrivée</label>
       <input type="date" id="dateArrivee" name="date_arrivee" required />
@@ -178,7 +178,27 @@
     const dateDepartInput = document.getElementById("dateDepart");
     const heureArriveeSelect = document.getElementById("heureArrivee");
     const heureDepartSelect = document.getElementById("heureDepart");
+    const nbAnimalInput = form.querySelector('input[name="nb_animal"]');
+    const nomsChiensContainer = document.getElementById("nomsChiensContainer");
 
+    // --- Gestion dynamique des noms de chiens ---
+    nbAnimalInput.addEventListener("input", () => {
+      const nb = parseInt(nbAnimalInput.value) || 0;
+      nomsChiensContainer.innerHTML = "";
+
+      for(let i = 1; i <= nb; i++){
+        const label = document.createElement("label");
+        label.textContent = `Nom du chien #${i}`;
+        const input = document.createElement("input");
+        input.type = "text";
+        input.name = `nom_chien_${i}`;
+        input.required = true;
+        nomsChiensContainer.appendChild(label);
+        nomsChiensContainer.appendChild(input);
+      }
+    });
+
+    // --- Gestion des dates et heures ---
     function getToday() {
       const today = new Date();
       const yyyy = today.getFullYear();
@@ -259,6 +279,7 @@
     });
     heureDepartSelect.addEventListener("change",validateDatesAndHours);
 
+    // --- Soumission du formulaire ---
     form.addEventListener("submit", async e=>{
       e.preventDefault();
       if(!validateDatesAndHours()) return;
@@ -281,6 +302,7 @@
           form.reset();
           dateArriveeInput.value = todayStr;
           dateDepartInput.value = todayStr;
+          nomsChiensContainer.innerHTML = "";
           updateHourOptions(dateArriveeInput, heureArriveeSelect);
           updateHourOptions(dateDepartInput, heureDepartSelect);
         }
