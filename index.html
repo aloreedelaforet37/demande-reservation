@@ -13,7 +13,6 @@
       --beige-fond: #fffaf0;
       --brun-texte: #4a3c31;
     }
-
     body {
       font-family: 'Roboto', sans-serif;
       background: linear-gradient(to bottom right, #e6f2ea, #d2e5d7);
@@ -23,7 +22,6 @@
       align-items: center;
       padding: 2rem;
     }
-
     .form-container {
       background: var(--beige-fond);
       border-radius: 24px;
@@ -34,97 +32,20 @@
       text-align: center;
       transition: transform 0.3s ease, box-shadow 0.3s ease;
     }
-
-    .form-container:hover {
-      transform: translateY(-4px);
-      box-shadow: 0 12px 30px rgba(0,0,0,0.15);
-    }
-
-    .form-container img {
-      max-width: 140px;
-      height: auto;
-      margin-bottom: 1rem;
-    }
-
-    h1 {
-      font-family: 'Pacifico', cursive;
-      color: var(--brun-texte);
-      margin-bottom: 1rem;
-      font-size: 1.9rem;
-    }
-
-    p.subtitle {
-      font-size: 1rem;
-      color: #6b5849;
-      margin-bottom: 1.5rem;
-    }
-
-    label {
-      display: block;
-      text-align: left;
-      color: var(--brun-texte);
-      font-weight: 500;
-      margin-top: 1rem;
-      margin-bottom: 0.3rem;
-    }
-
-    input, select, textarea {
-      width: 100%;
-      padding: 0.7rem 0.9rem;
-      border-radius: 12px;
-      border: 1px solid #c9b6a4;
-      background-color: #fff;
-      font-size: 1rem;
-      transition: all 0.25s ease;
-      box-sizing: border-box;
-    }
-
-    input:focus, select:focus, textarea:focus {
-      border-color: var(--vert-fonce);
-      outline: none;
-      box-shadow: 0 0 6px rgba(92,138,99,0.4);
-    }
-
-    textarea {
-      resize: vertical;
-      min-height: 80px;
-    }
-
-    button {
-      background: linear-gradient(135deg, var(--vert-clair), var(--vert-fonce));
-      color: white;
-      border: none;
-      padding: 0.8rem 1rem;
-      border-radius: 14px;
-      font-size: 1.1rem;
-      font-weight: bold;
-      margin-top: 1.8rem;
-      width: 100%;
-      cursor: pointer;
-      transition: all 0.3s ease;
-    }
-
-    button:hover {
-      background: linear-gradient(135deg, var(--vert-fonce), #4b7552);
-      transform: translateY(-2px);
-      box-shadow: 0 6px 15px rgba(0,0,0,0.2);
-    }
-
-    #message {
-      margin-top: 1rem;
-      font-weight: 500;
-    }
-
+    .form-container:hover { transform: translateY(-4px); box-shadow: 0 12px 30px rgba(0,0,0,0.15); }
+    .form-container img { max-width: 140px; height: auto; margin-bottom: 1rem; }
+    h1 { font-family: 'Pacifico', cursive; color: var(--brun-texte); margin-bottom: 1rem; font-size: 1.9rem; }
+    p.subtitle { font-size: 1rem; color: #6b5849; margin-bottom: 1.5rem; }
+    label { display: block; text-align: left; color: var(--brun-texte); font-weight: 500; margin-top: 1rem; margin-bottom: 0.3rem; }
+    input, select, textarea { width: 100%; padding: 0.7rem 0.9rem; border-radius: 12px; border: 1px solid #c9b6a4; background-color: #fff; font-size: 1rem; transition: all 0.25s ease; box-sizing: border-box; }
+    input:focus, select:focus, textarea:focus { border-color: var(--vert-fonce); outline: none; box-shadow: 0 0 6px rgba(92,138,99,0.4); }
+    textarea { resize: vertical; min-height: 80px; }
+    button { background: linear-gradient(135deg, var(--vert-clair), var(--vert-fonce)); color: white; border: none; padding: 0.8rem 1rem; border-radius: 14px; font-size: 1.1rem; font-weight: bold; margin-top: 1.8rem; width: 100%; cursor: pointer; transition: all 0.3s ease; }
+    button:hover { background: linear-gradient(135deg, var(--vert-fonce), #4b7552); transform: translateY(-2px); box-shadow: 0 6px 15px rgba(0,0,0,0.2); }
+    #message { margin-top: 1rem; font-weight: 500; }
     .success { color: #2e7d32; }
     .error { color: #b71c1c; }
-
-    @media (max-width: 500px) {
-      .form-container {
-        padding: 1.5rem 1.3rem;
-      }
-      h1 { font-size: 1.6rem; }
-      input, select, textarea, button { font-size: 0.95rem; }
-    }
+    @media (max-width: 500px) { .form-container { padding: 1.5rem 1.3rem; } h1 { font-size: 1.6rem; } input, select, textarea, button { font-size: 0.95rem; } }
   </style>
 </head>
 <body>
@@ -141,7 +62,7 @@
       <input type="email" name="email" required />
 
       <label>Nombre de chiens</label>
-      <input type="number" name="nb_animal" min="1" required />
+      <input type="number" name="nb_chien" min="1" required />
 
       <label>Nom du(des) chien(s)</label>
       <div id="nomsChiensContainer"></div>
@@ -178,27 +99,26 @@
     const dateDepartInput = document.getElementById("dateDepart");
     const heureArriveeSelect = document.getElementById("heureArrivee");
     const heureDepartSelect = document.getElementById("heureDepart");
-    const nbAnimalInput = form.querySelector('input[name="nb_animal"]');
+    const nbChienInput = form.querySelector('input[name="nb_chien"]');
     const nomsChiensContainer = document.getElementById("nomsChiensContainer");
 
-    // --- Gestion dynamique des noms de chiens ---
-    nbAnimalInput.addEventListener("input", () => {
-      const nb = parseInt(nbAnimalInput.value) || 0;
+    // --- Génération dynamique des noms de chiens ---
+    nbChienInput.addEventListener("input", () => {
+      const nb = parseInt(nbChienInput.value) || 0;
       nomsChiensContainer.innerHTML = "";
-
       for(let i = 1; i <= nb; i++){
         const label = document.createElement("label");
         label.textContent = `Nom du chien #${i}`;
         const input = document.createElement("input");
         input.type = "text";
-        input.name = `nom_chien_${i}`;
+        input.name = `nom_chien_input_${i}`;
         input.required = true;
         nomsChiensContainer.appendChild(label);
         nomsChiensContainer.appendChild(input);
       }
     });
 
-    // --- Gestion des dates et heures ---
+    // --- Gestion des heures d'ouverture ---
     function getToday() {
       const today = new Date();
       const yyyy = today.getFullYear();
@@ -251,7 +171,6 @@
     dateArriveeInput.min = todayStr;
     dateDepartInput.value = todayStr;
     dateDepartInput.min = todayStr;
-
     updateHourOptions(dateArriveeInput, heureArriveeSelect);
     updateHourOptions(dateDepartInput, heureDepartSelect);
 
@@ -285,8 +204,24 @@
       if(!validateDatesAndHours()) return;
 
       message.textContent="Envoi en cours...";
+
       const formData = new FormData(form);
-      const reservation = Object.fromEntries(formData.entries());
+      const reservation = {
+        nom_proprietaire: formData.get("nom_proprietaire"),
+        email: formData.get("email"),
+        nb_chien: parseInt(formData.get("nb_chien")),
+        nom_chien: [],
+        date_arrivee: formData.get("date_arrivee"),
+        heure_arrivee: formData.get("heure_arrivee"),
+        date_depart: formData.get("date_depart"),
+        heure_depart: formData.get("heure_depart"),
+        remarque: formData.get("remarque")
+      };
+
+      for(let i = 1; i <= reservation.nb_chien; i++){
+        const name = formData.get(`nom_chien_input_${i}`);
+        if(name) reservation.nom_chien.push(name);
+      }
 
       try{
         const {data,error} = await supabaseClient
@@ -300,9 +235,9 @@
           message.textContent="✅ Réservation enregistrée avec succès !";
           message.className="success";
           form.reset();
+          nomsChiensContainer.innerHTML = "";
           dateArriveeInput.value = todayStr;
           dateDepartInput.value = todayStr;
-          nomsChiensContainer.innerHTML = "";
           updateHourOptions(dateArriveeInput, heureArriveeSelect);
           updateHourOptions(dateDepartInput, heureDepartSelect);
         }
