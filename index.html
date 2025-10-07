@@ -21,10 +21,10 @@
       box-shadow: 0 8px 20px rgba(0,0,0,0.1);
       max-width: 500px;
       width: 100%;
-      text-align: center; /* pour centrer logo et titre */
+      text-align: center;
     }
     .form-container img {
-      max-width: 160px; /* ajuste la taille du logo */
+      max-width: 160px;
       height: auto;
       margin-bottom: 1rem;
     }
@@ -40,7 +40,7 @@
       margin-top: 1rem;
       color: #5c4431;
       font-size: 1rem;
-      text-align: left; /* pour aligner les champs correctement */
+      text-align: left;
     }
     input, select, textarea, button {
       width: 100%;
@@ -92,11 +92,10 @@
         Demande de réservation </h1>
 
     <form id="reservationForm">
-      <label>Nom du propriétaire<input type="text" name="nom_proprietaire" required></label>
+      <label>Nom et prénom du propriétaire<input type="text" name="nom_proprietaire" required></label>
       <label>Email<input type="email" name="email" required></label>
-      <label>Personne autorisée<input type="text" name="personne_autorisee"></label>
-      <label>Nombre d’animaux<input type="number" name="nb_animal" min="1" required></label>
-      <label>Nom des animaux<input type="text" name="nom_animaux"></label>
+      <label>Nombre de chiens<input type="number" name="nb_animal" min="1" required></label>
+      <label>Nom du(des) chien(s)<input type="text" name="nom_animaux"></label>
       <label>Date d’arrivée<input type="date" id="dateArrivee" name="date_arrivee" required></label>
       <label>Heure d’arrivée<select id="heureArrivee" name="heure_arrivee" required></select></label>
       <label>Date de départ<input type="date" id="dateDepart" name="date_depart" required></label>
@@ -106,9 +105,10 @@
     </form>
     <div id="message"></div>
   </div>
-<script>
-  const SUPABASE_URL='https://usatdvopaaxrxjiqhgju.supabase.co';
-  const SUPABASE_ANON_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InVzYXRkdm9wYWF4cnhqaXFoZ2p1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTk1MjUzNDUsImV4cCI6MjA3NTEwMTM0NX0.D52GPw5yZUJWN1oZD_sop7F7nU9WZLM5OMof1TI3IMc';
+
+  <script>
+    const SUPABASE_URL='https://usatdvopaaxrxjiqhgju.supabase.co';
+    const SUPABASE_ANON_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InVzYXRkdm9wYWF4cnhqaXFoZ2p1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTk1MjUzNDUsImV4cCI6MjA3NTEwMTM0NX0.D52GPw5yZUJWN1oZD_sop7F7nU9WZLM5OMof1TI3IMc';
     const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
     const form = document.getElementById("reservationForm");
@@ -229,10 +229,5 @@
       }
     });
   </script>
-  
 </body>
 </html>
-
-
-
-
