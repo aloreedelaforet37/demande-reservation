@@ -223,10 +223,15 @@ function updateNomsChiens() {
       remarque: formData.get("remarque")
     };
 
+    let nomsChiensArray = [];
     for(let i = 1; i <= reservation.nb_chien; i++){
       const name = formData.get(`nom_chien_input_${i}`);
-      if(name) reservation.nom_chien.push(name);
+      if(name) nomsChiensArray.push(name);
     }
+    
+    // Transforme le tableau en chaîne
+    reservation.nom_chien = nomsChiensArray.join(",");
+
 
     try{
       const {data,error} = await supabaseClient
@@ -255,6 +260,7 @@ function updateNomsChiens() {
 </script>
 </body>
 </html>
+
 
 
 
