@@ -127,7 +127,7 @@ function updateNomsChiens() {
   nomsChiensContainer.innerHTML = "";
   for(let i = 1; i <= nb; i++){
     const label = document.createElement("label");
-    label.textContent = (nb === 1) ? "Nom du chien" : `Nom du chien #${i}`;
+    label.textContent = (nb === 1) ? "Nom du chien" : `Nom du chien ${i}`;
     const input = document.createElement("input");
     input.type = "text";
     input.name = `nom_chien_input_${i}`;
@@ -280,6 +280,7 @@ function updateNomsChiens() {
 </script>
 </body>
 </html>
+
 
 
 
