@@ -5,12 +5,6 @@
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Réservation - À l'Orée de la Forêt</title>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-
-  <!-- 🌿 Flatpickr -->
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
-  <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
-  <script src="https://cdn.jsdelivr.net/npm/flatpickr/dist/l10n/fr.js"></script>
-
   <link href="https://fonts.googleapis.com/css2?family=Pacifico&family=Roboto:wght@300;400;500&display=swap" rel="stylesheet" />
   <style>
     :root {
@@ -18,7 +12,7 @@
       --vert-fonce: #5c8a63;
       --beige-fond: #fffaf0;
       --brun-texte: #4a3c31;
-      --vert-pastel: #F0FBF2;
+      --vert-pastel: #F5FFF6; /* vert encore plus clair */
     }
 
     body {
@@ -39,6 +33,12 @@
       width: 100%;
       padding: 2rem 2.5rem;
       text-align: center;
+      transition: transform 0.3s ease, box-shadow 0.3s ease;
+    }
+
+    .form-container:hover {
+      transform: translateY(-4px);
+      box-shadow: 0 12px 30px rgba(0,0,0,0.15);
     }
 
     .form-container img {
@@ -65,10 +65,16 @@
       margin-top: 0.3rem;
     }
 
-    p.subtitle {
-      font-size: 1rem;
-      color: #6b5849;
+    #encartFermeture {
+      border: 2px solid var(--vert-clair);
+      border-radius: 12px;
+      padding: 1rem;
+      text-align: left;
       margin-bottom: 1.5rem;
+      font-size: 0.95rem;
+      color: #4a3c31;
+      background: #fff;
+      transition: background 0.3s ease, border-color 0.3s ease;
     }
 
     label {
@@ -97,7 +103,10 @@
       box-shadow: 0 0 6px rgba(92,138,99,0.4);
     }
 
-    textarea { resize: vertical; min-height: 80px; }
+    textarea {
+      resize: vertical;
+      min-height: 80px;
+    }
 
     button {
       background: linear-gradient(135deg, var(--vert-clair), var(--vert-fonce));
@@ -119,32 +128,34 @@
       box-shadow: 0 6px 15px rgba(0,0,0,0.2);
     }
 
-    #message { margin-top: 1rem; font-weight: 500; }
+    #message {
+      margin-top: 1rem;
+      font-weight: 500;
+    }
+
     .success { color: #2e7d32; }
     .error { color: #b71c1c; }
 
     @media (max-width: 500px) {
-      .form-container { padding: 1.5rem 1.3rem; }
+      .form-container {
+        padding: 1.5rem 1.3rem;
+      }
       h1 { font-size: 1.6rem; }
       input, select, textarea, button { font-size: 0.95rem; }
     }
-
-    /* 🌿 Flatpickr style personnalisé */
-    .flatpickr-disabled {
-      background-color: #f8f8f8 !important;
-      color: #ccc !important;
-      cursor: not-allowed !important;
-    }
   </style>
 </head>
+
 <body>
   <div class="form-container">
     <img src="logo.png" alt="Logo À l'Orée de la Forêt" />
     <h1>
       À l’Orée de la Forêt<br>
-      <span class="subtitle-script">Pension canine familiale<br>Cheillé</span>
+      <span class="subtitle-script">Pension canine familiale - Cheillé</span>
       <span class="subtitle-script">Demande de réservation</span>
     </h1>
+
+    <div id="encartFermeture"></div>
 
     <form id="reservationForm">
       <label>Nom et prénom du propriétaire</label>
@@ -155,17 +166,17 @@
 
       <label>Nombre de chiens</label>
       <input type="number" name="nb_chien" min="1" value="1" required />
-
+      
       <div id="nomsChiensContainer"></div>
 
       <label>Date d’arrivée</label>
-      <input type="text" id="dateArrivee" name="date_arrivee" required />
+      <input type="date" id="dateArrivee" name="date_arrivee" required />
 
       <label>Heure d’arrivée</label>
       <select id="heureArrivee" name="heure_arrivee" required></select>
 
       <label>Date de départ</label>
-      <input type="text" id="dateDepart" name="date_depart" required />
+      <input type="date" id="dateDepart" name="date_depart" required />
 
       <label>Heure de départ</label>
       <select id="heureDepart" name="heure_depart" required></select>
@@ -179,9 +190,10 @@
     <div id="message"></div>
   </div>
 
+  <!-- SCRIPT PRINCIPAL -->
   <script>
   const SUPABASE_URL='https://usatdvopaaxrxjiqhgju.supabase.co';
-  const SUPABASE_ANON_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...'; // raccourci pour lisibilité
+  const SUPABASE_ANON_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InVzYXRkdm9wYWF4cnhqaXFoZ2p1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTk1MjUzNDUsImV4cCI6MjA3NTEwMTM0NX0.D52GPw5yZUJWN1oZD_sop7F7nU9WZLM5OMof1TI3IMc';
   const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
   const form = document.getElementById("reservationForm");
@@ -192,56 +204,78 @@
   const heureDepartSelect = document.getElementById("heureDepart");
   const nbChienInput = form.querySelector('input[name="nb_chien"]');
   const nomsChiensContainer = document.getElementById("nomsChiensContainer");
+  const encartFermeture = document.getElementById("encartFermeture");
 
-  const fermetures = [
-    { start: "2025-11-19", end: "2025-11-26" },
-    { start: "2025-12-20", end: "2025-12-26" },
-    { start: "2026-02-22", end: "2026-02-28" }
+  // --- Dates de fermeture ---
+  const periodesFermees = [
+    { debut: "2025-11-19", fin: "2025-11-26" },
+    { debut: "2025-12-20", fin: "2025-12-26" },
+    { debut: "2026-02-22", fin: "2026-02-28" }
   ];
 
-  // --- Flatpickr configuration ---
-  flatpickr.localize(flatpickr.l10ns.fr);
+  // --- Génération de l'encart automatique ---
+  function afficherEncartFermeture() {
+    const aujourdHui = new Date();
+    let contenu = "🌲 <strong>Périodes de fermeture :</strong><br>";
+    let proche = false;
 
-  const disableDates = fermetures.map(f => ({ from: f.start, to: f.end }));
+    periodesFermees.forEach(p => {
+      const debut = new Date(p.debut);
+      const fin = new Date(p.fin);
+      const debutTxt = debut.toLocaleDateString("fr-FR", { day: '2-digit', month: 'long', year: 'numeric' });
+      const finTxt = fin.toLocaleDateString("fr-FR", { day: '2-digit', month: 'long', year: 'numeric' });
+      contenu += `• du <strong>${debutTxt}</strong> au <strong>${finTxt}</strong><br>`;
 
-  const fpArrivee = flatpickr(dateArriveeInput, {
-    dateFormat: "Y-m-d",
-    minDate: "today",
-    disable: disableDates,
-    onChange: function(selectedDates) {
-      fpDepart.set("minDate", selectedDates[0]);
-      checkBlockedPeriod();
-    }
-  });
-
-  const fpDepart = flatpickr(dateDepartInput, {
-    dateFormat: "Y-m-d",
-    minDate: "today",
-    disable: disableDates,
-    onChange: checkBlockedPeriod
-  });
-
-  // --- Bloquer réservation chevauchant une période de fermeture ---
-  function checkBlockedPeriod() {
-    const arrival = fpArrivee.selectedDates[0];
-    const departure = fpDepart.selectedDates[0];
-    if (!arrival || !departure) return;
-
-    const inClosedPeriod = fermetures.some(f => {
-      const start = new Date(f.start);
-      const end = new Date(f.end);
-      return (
-        (arrival >= start && arrival <= end) ||
-        (departure >= start && departure <= end) ||
-        (arrival <= start && departure >= end)
-      );
+      const diffJours = Math.floor((debut - aujourdHui) / (1000 * 60 * 60 * 24));
+      if (diffJours >= 0 && diffJours <= 15) proche = true;
     });
 
-    if (inClosedPeriod) {
-      message.textContent = "🚫 Les dates choisies chevauchent une période de fermeture. Merci d’en sélectionner d’autres.";
+    encartFermeture.innerHTML = contenu;
+    encartFermeture.style.background = proche ? "#FFF5E5" : "#fff";
+    encartFermeture.style.borderColor = proche ? "#E6B800" : "var(--vert-clair)";
+  }
+  afficherEncartFermeture();
+
+  // --- Vérifications fermeture ---
+  function estFermee(dateStr) {
+    const date = new Date(dateStr);
+    return periodesFermees.some(p => {
+      const debut = new Date(p.debut);
+      const fin = new Date(p.fin);
+      return date >= debut && date <= fin;
+    });
+  }
+
+  function chevaucheFermeture(arriveeStr, departStr) {
+    const arrivee = new Date(arriveeStr);
+    const depart = new Date(departStr);
+    return periodesFermees.some(p => {
+      const debut = new Date(p.debut);
+      const fin = new Date(p.fin);
+      return (arrivee <= fin && depart >= debut);
+    });
+  }
+
+  function verifierFermetureEtChevauchement() {
+    const arrivee = dateArriveeInput.value;
+    const depart = dateDepartInput.value;
+    if (!arrivee || !depart) return true;
+
+    if (chevaucheFermeture(arrivee, depart)) {
+      message.textContent = "❌ La période sélectionnée chevauche une période de fermeture.";
       message.className = "error";
+      dateArriveeInput.setCustomValidity("Période fermée.");
+      dateDepartInput.setCustomValidity("Période fermée.");
+      return false;
+    } else if (estFermee(arrivee) || estFermee(depart)) {
+      message.textContent = "❌ Désolé, la pension est fermée à cette date.";
+      message.className = "error";
+      dateArriveeInput.setCustomValidity("Date fermée.");
+      dateDepartInput.setCustomValidity("Date fermée.");
       return false;
     } else {
+      dateArriveeInput.setCustomValidity("");
+      dateDepartInput.setCustomValidity("");
       message.textContent = "";
       return true;
     }
@@ -251,7 +285,7 @@
   function updateNomsChiens() {
     const nb = parseInt(nbChienInput.value) || 0;
     nomsChiensContainer.innerHTML = "";
-    for(let i = 1; i <= nb; i++){
+    for (let i = 1; i <= nb; i++) {
       const label = document.createElement("label");
       label.textContent = (nb === 1) ? "Nom du chien" : `Nom du chien ${i}`;
       const input = document.createElement("input");
@@ -264,6 +298,126 @@
   }
   nbChienInput.addEventListener("input", updateNomsChiens);
   updateNomsChiens();
+
+  // --- Heures d'ouverture ---
+  function getOpeningHours(day) {
+    switch (day) {
+      case 0: return [{ start: "17:00", end: "19:00" }];
+      case 6: return [{ start: "10:00", end: "12:00" }];
+      default: return [{ start: "09:00", end: "14:00" }, { start: "17:00", end: "19:00" }];
+    }
+  }
+
+  function generateTimeOptions(day) {
+    const ranges = getOpeningHours(day);
+    const options = [];
+    ranges.forEach(r => {
+      let [h, m] = r.start.split(":").map(Number);
+      const [endH, endM] = r.end.split(":").map(Number);
+      while (h < endH || (h === endH && m < endM)) {
+        const hh = String(h).padStart(2, "0");
+        const mm = String(m).padStart(2, "0");
+        options.push(`${hh}:${mm}`);
+        m += 15;
+        if (m >= 60) { m = 0; h++; }
+      }
+    });
+    return options;
+  }
+
+  function updateHourOptions(dateInput, selectInput) {
+    const date = new Date(dateInput.value);
+    if (isNaN(date)) return;
+    const day = date.getDay();
+    const times = generateTimeOptions(day);
+    selectInput.innerHTML = "";
+    times.forEach(t => {
+      const opt = document.createElement("option");
+      opt.value = t;
+      opt.textContent = t;
+      selectInput.appendChild(opt);
+    });
+  }
+
+  // --- Initialisation des dates ---
+  function getToday() {
+    const today = new Date();
+    const yyyy = today.getFullYear();
+    const mm = String(today.getMonth() + 1).padStart(2, '0');
+    const dd = String(today.getDate()).padStart(2, '0');
+    return `${yyyy}-${mm}-${dd}`;
+  }
+
+  const todayStr = getToday();
+  dateArriveeInput.value = todayStr;
+  dateArriveeInput.min = todayStr;
+  dateDepartInput.value = todayStr;
+  dateDepartInput.min = todayStr;
+  updateHourOptions(dateArriveeInput, heureArriveeSelect);
+  updateHourOptions(dateDepartInput, heureDepartSelect);
+
+  // --- Validation dynamique ---
+  dateArriveeInput.addEventListener("change", () => {
+    updateHourOptions(dateArriveeInput, heureArriveeSelect);
+    dateDepartInput.min = dateArriveeInput.value;
+    verifierFermetureEtChevauchement();
+  });
+
+  dateDepartInput.addEventListener("change", () => {
+    updateHourOptions(dateDepartInput, heureDepartSelect);
+    verifierFermetureEtChevauchement();
+  });
+
+  // --- Soumission ---
+  form.addEventListener("submit", async e => {
+    e.preventDefault();
+    if (!verifierFermetureEtChevauchement()) return;
+
+    message.textContent = "Envoi en cours...";
+
+    const formData = new FormData(form);
+    const reservation = {
+      nom_proprietaire: formData.get("nom_proprietaire"),
+      email: formData.get("email"),
+      nb_chien: parseInt(formData.get("nb_chien")),
+      nom_chien: [],
+      date_arrivee: formData.get("date_arrivee"),
+      heure_arrivee: formData.get("heure_arrivee"),
+      date_depart: formData.get("date_depart"),
+      heure_depart: formData.get("heure_depart"),
+      remarque: formData.get("remarque")
+    };
+
+    let nomsChiensArray = [];
+    for (let i = 1; i <= reservation.nb_chien; i++) {
+      const name = formData.get(`nom_chien_input_${i}`);
+      if (name) nomsChiensArray.push(name);
+    }
+    reservation.nom_chien = nomsChiensArray.join(",");
+
+    try {
+      const { error } = await supabaseClient
+        .from("reservations")
+        .insert([reservation]);
+      if (error) {
+        message.textContent = "❌ Erreur : " + error.message;
+        message.className = "error";
+      } else {
+        message.textContent = "✅ Réservation enregistrée avec succès !";
+        message.className = "success";
+        form.reset();
+        nomsChiensContainer.innerHTML = "";
+        dateArriveeInput.value = todayStr;
+        dateDepartInput.value = todayStr;
+        updateHourOptions(dateArriveeInput, heureArriveeSelect);
+        updateHourOptions(dateDepartInput, heureDepartSelect);
+        updateNomsChiens();
+      }
+    } catch (err) {
+      message.textContent = "⚡ Exception : " + err.message;
+      message.className = "error";
+    }
+  });
   </script>
 </body>
 </html>
