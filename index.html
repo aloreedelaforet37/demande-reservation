@@ -5,6 +5,12 @@
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Réservation - À l'Orée de la Forêt</title>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+  <!-- 🌿 Flatpickr -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+  <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+  <script src="https://cdn.jsdelivr.net/npm/flatpickr/dist/l10n/fr.js"></script>
+
   <link href="https://fonts.googleapis.com/css2?family=Pacifico&family=Roboto:wght@300;400;500&display=swap" rel="stylesheet" />
   <style>
     :root {
@@ -14,6 +20,7 @@
       --brun-texte: #4a3c31;
       --vert-pastel: #F0FBF2;
     }
+
     body {
       font-family: 'Roboto', sans-serif;
       background: #ffffff;
@@ -23,6 +30,7 @@
       align-items: center;
       padding: 2rem;
     }
+
     .form-container {
       background: var(--vert-pastel);
       border-radius: 24px;
@@ -32,7 +40,13 @@
       padding: 2rem 2.5rem;
       text-align: center;
     }
-    .form-container img { max-width: 140px; height: auto; margin-bottom: 1rem; }
+
+    .form-container img {
+      max-width: 140px;
+      height: auto;
+      margin-bottom: 1rem;
+    }
+
     h1 {
       font-family: 'Segoe UI', sans-serif;
       color: var(--brun-texte);
@@ -41,6 +55,7 @@
       line-height: 1.3;
       text-align: center;
     }
+
     .subtitle-script {
       display: block;
       font-size: 1.1rem;
@@ -49,16 +64,13 @@
       font-weight: normal;
       margin-top: 0.3rem;
     }
-    #encartFermeture {
-      background: #fff;
-      border: 2px solid var(--vert-clair);
-      border-radius: 14px;
-      padding: 0.8rem;
-      margin-bottom: 1rem;
-      font-size: 0.95rem;
-      color: var(--brun-texte);
-      text-align: left;
+
+    p.subtitle {
+      font-size: 1rem;
+      color: #6b5849;
+      margin-bottom: 1.5rem;
     }
+
     label {
       display: block;
       text-align: left;
@@ -67,6 +79,7 @@
       margin-top: 1rem;
       margin-bottom: 0.3rem;
     }
+
     input, select, textarea {
       width: 100%;
       padding: 0.7rem 0.9rem;
@@ -77,11 +90,15 @@
       transition: all 0.25s ease;
       box-sizing: border-box;
     }
+
     input:focus, select:focus, textarea:focus {
       border-color: var(--vert-fonce);
       outline: none;
       box-shadow: 0 0 6px rgba(92,138,99,0.4);
     }
+
+    textarea { resize: vertical; min-height: 80px; }
+
     button {
       background: linear-gradient(135deg, var(--vert-clair), var(--vert-fonce));
       color: white;
@@ -95,14 +112,158 @@
       cursor: pointer;
       transition: all 0.3s ease;
     }
+
     button:hover {
       background: linear-gradient(135deg, var(--vert-fonce), #4b7552);
       transform: translateY(-2px);
       box-shadow: 0 6px 15px rgba(0,0,0,0.2);
     }
+
     #message { margin-top: 1rem; font-weight: 500; }
     .success { color: #2e7d32; }
     .error { color: #b71c1c; }
+
+    @media (max-width: 500px) {
+      .form-container { padding: 1.5rem 1.3rem; }
+      h1 { font-size: 1.6rem; }
+      input, select, textarea, button { font-size: 0.95rem; }
+    }
+
+    /* 🌿 Flatpickr style personnalisé */
+    .flatpickr-disabled {
+      background-color: #f8f8f8 !important;
+      color: #ccc !important;
+      cursor: not-allowed !important;
+    }
   </style>
 </head>
 <body>
+  <div class="form-container">
+    <img src="logo.png" alt="Logo À l'Orée de la Forêt" />
+    <h1>
+      À l’Orée de la Forêt<br>
+      <span class="subtitle-script">Pension canine familiale<br>Cheillé</span>
+      <span class="subtitle-script">Demande de réservation</span>
+    </h1>
+
+    <form id="reservationForm">
+      <label>Nom et prénom du propriétaire</label>
+      <input type="text" name="nom_proprietaire" required />
+
+      <label>Email</label>
+      <input type="email" name="email" required />
+
+      <label>Nombre de chiens</label>
+      <input type="number" name="nb_chien" min="1" value="1" required />
+
+      <div id="nomsChiensContainer"></div>
+
+      <label>Date d’arrivée</label>
+      <input type="text" id="dateArrivee" name="date_arrivee" required />
+
+      <label>Heure d’arrivée</label>
+      <select id="heureArrivee" name="heure_arrivee" required></select>
+
+      <label>Date de départ</label>
+      <input type="text" id="dateDepart" name="date_depart" required />
+
+      <label>Heure de départ</label>
+      <select id="heureDepart" name="heure_depart" required></select>
+
+      <label>Remarque</label>
+      <textarea name="remarque"></textarea>
+
+      <button type="submit">Envoyer la réservation</button>
+    </form>
+
+    <div id="message"></div>
+  </div>
+
+  <script>
+  const SUPABASE_URL='https://usatdvopaaxrxjiqhgju.supabase.co';
+  const SUPABASE_ANON_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...'; // raccourci pour lisibilité
+  const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+  const form = document.getElementById("reservationForm");
+  const message = document.getElementById("message");
+  const dateArriveeInput = document.getElementById("dateArrivee");
+  const dateDepartInput = document.getElementById("dateDepart");
+  const heureArriveeSelect = document.getElementById("heureArrivee");
+  const heureDepartSelect = document.getElementById("heureDepart");
+  const nbChienInput = form.querySelector('input[name="nb_chien"]');
+  const nomsChiensContainer = document.getElementById("nomsChiensContainer");
+
+  const fermetures = [
+    { start: "2025-11-19", end: "2025-11-26" },
+    { start: "2025-12-20", end: "2025-12-26" },
+    { start: "2026-02-22", end: "2026-02-28" }
+  ];
+
+  // --- Flatpickr configuration ---
+  flatpickr.localize(flatpickr.l10ns.fr);
+
+  const disableDates = fermetures.map(f => ({ from: f.start, to: f.end }));
+
+  const fpArrivee = flatpickr(dateArriveeInput, {
+    dateFormat: "Y-m-d",
+    minDate: "today",
+    disable: disableDates,
+    onChange: function(selectedDates) {
+      fpDepart.set("minDate", selectedDates[0]);
+      checkBlockedPeriod();
+    }
+  });
+
+  const fpDepart = flatpickr(dateDepartInput, {
+    dateFormat: "Y-m-d",
+    minDate: "today",
+    disable: disableDates,
+    onChange: checkBlockedPeriod
+  });
+
+  // --- Bloquer réservation chevauchant une période de fermeture ---
+  function checkBlockedPeriod() {
+    const arrival = fpArrivee.selectedDates[0];
+    const departure = fpDepart.selectedDates[0];
+    if (!arrival || !departure) return;
+
+    const inClosedPeriod = fermetures.some(f => {
+      const start = new Date(f.start);
+      const end = new Date(f.end);
+      return (
+        (arrival >= start && arrival <= end) ||
+        (departure >= start && departure <= end) ||
+        (arrival <= start && departure >= end)
+      );
+    });
+
+    if (inClosedPeriod) {
+      message.textContent = "🚫 Les dates choisies chevauchent une période de fermeture. Merci d’en sélectionner d’autres.";
+      message.className = "error";
+      return false;
+    } else {
+      message.textContent = "";
+      return true;
+    }
+  }
+
+  // --- Génération dynamique des noms de chiens ---
+  function updateNomsChiens() {
+    const nb = parseInt(nbChienInput.value) || 0;
+    nomsChiensContainer.innerHTML = "";
+    for(let i = 1; i <= nb; i++){
+      const label = document.createElement("label");
+      label.textContent = (nb === 1) ? "Nom du chien" : `Nom du chien ${i}`;
+      const input = document.createElement("input");
+      input.type = "text";
+      input.name = `nom_chien_input_${i}`;
+      input.required = true;
+      nomsChiensContainer.appendChild(label);
+      nomsChiensContainer.appendChild(input);
+    }
+  }
+  nbChienInput.addEventListener("input", updateNomsChiens);
+  updateNomsChiens();
+  </script>
+</body>
+</html>
