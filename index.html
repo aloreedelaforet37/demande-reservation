@@ -95,14 +95,15 @@
     .success { color: #2e7d32; }
     .error { color: #b71c1c; }
 
-    /* Date + Heure côte à côte */
+    /* Date + Heure côte à côte avec espace */
     .datetime-group { display: flex; flex-direction: column; margin-top: 1rem; }
-    .datetime-fields { display: flex; gap: 0; }
+    .datetime-fields { display: flex; gap: 0.5rem; } /* <- espace ajouté entre date et heure */
     .datetime-fields input, .datetime-fields select { flex: 1; border-radius: 0; }
     .datetime-fields input:first-child { border-top-left-radius: 12px; border-bottom-left-radius: 12px; border-right: none; }
     .datetime-fields select:last-child { border-top-right-radius: 12px; border-bottom-right-radius: 12px; }
+
     @media (max-width: 500px) {
-      .datetime-fields { flex-direction: column; }
+      .datetime-fields { flex-direction: column; gap: 0.5rem; }
       .datetime-fields input:first-child,
       .datetime-fields select:last-child { border-radius: 12px; border-right: 1px solid #c9b6a4; }
     }
@@ -171,7 +172,6 @@
     const nomsChiensContainer = document.getElementById("nomsChiensContainer");
     const encartFermeture = document.getElementById("encartFermeture");
 
-    // --- Périodes de fermeture ---
     const periodesFermees = [
       { debut: "2025-11-19", fin: "2025-11-26" },
       { debut: "2025-12-20", fin: "2025-12-26" },
@@ -197,7 +197,7 @@
     }
     afficherEncartFermeture();
 
-    // --- Champs noms des chiens ---
+    // Champs noms des chiens
     function updateNomsChiens(){
       let nb = parseInt(nbChienInput.value,10);
       if(isNaN(nb)||nb<1) nb=1;
@@ -216,7 +216,7 @@
     nbChienInput.addEventListener("input",updateNomsChiens);
     updateNomsChiens();
 
-    // --- Horaires ---
+    // Horaires
     function isHoliday(dateStr){
       if(!dateStr) return false;
       const date = new Date(dateStr);
@@ -284,7 +284,6 @@
       updateHourOptions(dateDepartInput,heureDepartSelect,"depart");
     });
 
-    // --- Soumission Supabase ---
     form.addEventListener("submit", async e=>{
       e.preventDefault();
       if(!heureArriveeSelect.value){ message.textContent="❌ Choisissez un créneau d'arrivée."; message.className="error"; return;}
