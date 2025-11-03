@@ -10,9 +10,7 @@
     :root {
       --vert-clair: #9ec8a7;
       --vert-fonce: #5c8a63;
-      --beige-fond: #fffaf0;
       --brun-texte: #4a3c31;
-      --vert-pastel: #F5FFF6;
     }
 
     body {
@@ -33,12 +31,6 @@
       width: 100%;
       padding: 2rem 2.5rem;
       text-align: center;
-      transition: transform 0.3s ease, box-shadow 0.3s ease;
-    }
-
-    .form-container:hover {
-      transform: translateY(-4px);
-      box-shadow: 0 12px 30px rgba(0,0,0,0.15);
     }
 
     .form-container img {
@@ -48,31 +40,27 @@
     }
 
     h1 {
-      font-family: 'Segoe UI', sans-serif;
       color: var(--brun-texte);
       font-size: 2rem;
       margin-bottom: 1rem;
       line-height: 1.3;
-      text-align: center;
     }
 
     .subtitle-script {
       display: block;
       font-size: 1.1rem;
-      font-family: 'Segoe UI', sans-serif;
-      color: var(--brun-fonce);
-      font-weight: normal;
+      color: var(--brun-texte);
       margin-top: 0.3rem;
     }
 
-    #encartFermeture, #encartHoraires {
+    #encartFermeture {
       border: 2px solid var(--vert-clair);
       border-radius: 12px;
       padding: 1rem;
       text-align: left;
       margin-bottom: 1.5rem;
       font-size: 0.95rem;
-      color: #4a3c31;
+      color: var(--brun-texte);
       background: #fff;
     }
 
@@ -92,19 +80,6 @@
       border: 1px solid #c9b6a4;
       background-color: #fff;
       font-size: 1rem;
-      transition: all 0.25s ease;
-      box-sizing: border-box;
-    }
-
-    input:focus, select:focus, textarea:focus {
-      border-color: var(--vert-fonce);
-      outline: none;
-      box-shadow: 0 0 6px rgba(92,138,99,0.4);
-    }
-
-    textarea {
-      resize: vertical;
-      min-height: 80px;
     }
 
     button {
@@ -118,28 +93,14 @@
       margin-top: 1.8rem;
       width: 100%;
       cursor: pointer;
-      transition: all 0.3s ease;
     }
 
     button:hover {
       background: linear-gradient(135deg, var(--vert-fonce), #4b7552);
-      transform: translateY(-2px);
-      box-shadow: 0 6px 15px rgba(0,0,0,0.2);
-    }
-
-    #message {
-      margin-top: 1rem;
-      font-weight: 500;
     }
 
     .success { color: #2e7d32; }
     .error { color: #b71c1c; }
-
-    @media (max-width: 500px) {
-      .form-container { padding: 1.5rem 1.3rem; }
-      h1 { font-size: 1.6rem; }
-      input, select, textarea, button { font-size: 0.95rem; }
-    }
   </style>
 </head>
 
@@ -153,7 +114,6 @@
     </h1>
 
     <div id="encartFermeture"></div>
-    <div id="encartHoraires"></div>
 
     <form id="reservationForm">
       <label>Nom et prénom du propriétaire</label>
@@ -201,9 +161,7 @@
     const nbChienInput = form.querySelector('input[name="nb_chien"]');
     const nomsChiensContainer = document.getElementById("nomsChiensContainer");
     const encartFermeture = document.getElementById("encartFermeture");
-    const encartHoraires = document.getElementById("encartHoraires");
 
-    // --- Périodes de fermeture ---
     const periodesFermees = [
       { debut: "2025-11-19", fin: "2025-11-26" },
       { debut: "2025-12-20", fin: "2025-12-26" },
@@ -211,36 +169,17 @@
     ];
 
     function afficherEncartFermeture() {
-      const aujourdHui = new Date();
       let contenu = "🌲 <strong>Périodes de fermeture :</strong><br>";
-      let proche = false;
-
       periodesFermees.forEach(p => {
-        const debut = new Date(p.debut);
-        const fin = new Date(p.fin);
-        const debutTxt = debut.toLocaleDateString("fr-FR", { day: '2-digit', month: 'long', year: 'numeric' });
-        const finTxt = fin.toLocaleDateString("fr-FR", { day: '2-digit', month: 'long', year: 'numeric' });
-        contenu += `• du <strong>${debutTxt}</strong> au <strong>${finTxt}</strong><br>`;
-        const diffJours = Math.floor((debut - aujourdHui) / (1000 * 60 * 60 * 24));
-        if (diffJours >= 0 && diffJours <= 15) proche = true;
+        const debut = new Date(p.debut).toLocaleDateString("fr-FR");
+        const fin = new Date(p.fin).toLocaleDateString("fr-FR");
+        contenu += `• du <strong>${debut}</strong> au <strong>${fin}</strong><br>`;
       });
-
       encartFermeture.innerHTML = contenu;
-      encartFermeture.style.background = proche ? "#FFF5E5" : "#fff";
-      encartFermeture.style.borderColor = proche ? "#E6B800" : "var(--vert-clair)";
     }
     afficherEncartFermeture();
 
-    // --- Encarts horaires hebdomadaires ---
-    encartHoraires.innerHTML = `
-    🕒 <strong>Horaires d'ouverture :</strong><br>
-    • Lundi & Mardi : 9h–14h et 16h–17h<br>
-    • Mercredi à Vendredi : 9h–14h et 17h–18h45<br>
-    • Samedi : 10h–12h et 17h–18h<br>
-    • Dimanche & Jours fériés : 17h–18h
-    `;
-
-    // --- Gestion des horaires d'ouverture ---
+    // Fonctions pour jours fériés
     function getEasterDate(year) {
       const f = Math.floor,
         G = year % 19,
@@ -281,8 +220,7 @@
         `${year}-12-25`
       ];
 
-      const dateISO = dateStr;
-      if (holidays.includes(dateISO)) return [{ start: "17:00", end: "18:00" }];
+      if (holidays.includes(dateStr)) return [{ start: "17:00", end: "18:00" }];
 
       switch (day) {
         case 0: return [{ start: "17:00", end: "18:00" }];
@@ -290,7 +228,7 @@
         case 2: return [{ start: "09:00", end: "14:00" }, { start: "16:00", end: "17:00" }];
         case 3:
         case 4:
-        case 5: return [{ start: "09:00", end: "14:00" }, { start: "17:00", end: "18:45" }];
+        case 5: return [{ start: "09:00", end: "14:00" }, { start: "17:00", end: "19:00" }];
         case 6: return [{ start: "10:00", end: "12:00" }, { start: "17:00", end: "18:00" }];
         default: return [];
       }
@@ -327,7 +265,6 @@
       });
     }
 
-    // --- Initialisation des dates ---
     function getToday() {
       const today = new Date();
       const yyyy = today.getFullYear();
@@ -338,29 +275,19 @@
 
     const todayStr = getToday();
     dateArriveeInput.value = todayStr;
-    dateArriveeInput.min = todayStr;
     dateDepartInput.value = todayStr;
-    dateDepartInput.min = todayStr;
     updateHourOptions(dateArriveeInput, heureArriveeSelect);
     updateHourOptions(dateDepartInput, heureDepartSelect);
 
-    // --- Validation dynamique ---
-    dateArriveeInput.addEventListener("change", () => {
-      updateHourOptions(dateArriveeInput, heureArriveeSelect);
-      dateDepartInput.min = dateArriveeInput.value;
-    });
+    dateArriveeInput.addEventListener("change", () => updateHourOptions(dateArriveeInput, heureArriveeSelect));
+    dateDepartInput.addEventListener("change", () => updateHourOptions(dateDepartInput, heureDepartSelect));
 
-    dateDepartInput.addEventListener("change", () => {
-      updateHourOptions(dateDepartInput, heureDepartSelect);
-    });
-
-    // --- Génération dynamique des noms de chiens ---
     function updateNomsChiens() {
       const nb = parseInt(nbChienInput.value) || 0;
       nomsChiensContainer.innerHTML = "";
       for (let i = 1; i <= nb; i++) {
         const label = document.createElement("label");
-        label.textContent = (nb === 1) ? "Nom du chien" : `Nom du chien ${i}`;
+        label.textContent = nb === 1 ? "Nom du chien" : `Nom du chien ${i}`;
         const input = document.createElement("input");
         input.type = "text";
         input.name = `nom_chien_input_${i}`;
@@ -372,11 +299,9 @@
     nbChienInput.addEventListener("input", updateNomsChiens);
     updateNomsChiens();
 
-    // --- Soumission ---
     form.addEventListener("submit", async e => {
       e.preventDefault();
       message.textContent = "Envoi en cours...";
-
       const formData = new FormData(form);
       const reservation = {
         nom_proprietaire: formData.get("nom_proprietaire"),
@@ -390,17 +315,13 @@
         remarque: formData.get("remarque")
       };
 
-      let nomsChiensArray = [];
       for (let i = 1; i <= reservation.nb_chien; i++) {
-        const name = formData.get(`nom_chien_input_${i}`);
-        if (name) nomsChiensArray.push(name);
+        reservation.nom_chien.push(formData.get(`nom_chien_input_${i}`));
       }
-      reservation.nom_chien = nomsChiensArray.join(",");
+      reservation.nom_chien = reservation.nom_chien.join(",");
 
       try {
-        const { error } = await supabaseClient
-          .from("reservations")
-          .insert([reservation]);
+        const { error } = await supabaseClient.from("reservations").insert([reservation]);
         if (error) {
           message.textContent = "❌ Erreur : " + error.message;
           message.className = "error";
@@ -409,10 +330,6 @@
           message.className = "success";
           form.reset();
           nomsChiensContainer.innerHTML = "";
-          dateArriveeInput.value = todayStr;
-          dateDepartInput.value = todayStr;
-          updateHourOptions(dateArriveeInput, heureArriveeSelect);
-          updateHourOptions(dateDepartInput, heureDepartSelect);
           updateNomsChiens();
         }
       } catch (err) {
