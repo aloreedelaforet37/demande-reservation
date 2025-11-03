@@ -95,10 +95,6 @@
       cursor: pointer;
     }
 
-    button:hover {
-      background: linear-gradient(135deg, var(--vert-fonce), #4b7552);
-    }
-
     .success { color: #2e7d32; }
     .error { color: #b71c1c; }
   </style>
@@ -179,7 +175,7 @@
     }
     afficherEncartFermeture();
 
-    // Fonctions pour jours fériés
+    // --- Calcul jours fériés ---
     function getEasterDate(year) {
       const f = Math.floor,
         G = year % 19,
@@ -203,27 +199,33 @@
       return date.toISOString().split("T")[0];
     }
 
-    function getOpeningHours(day, dateStr) {
-      const year = new Date(dateStr).getFullYear();
+    function isHoliday(dateStr) {
+      const date = new Date(dateStr);
+      const year = date.getFullYear();
       const easter = getEasterDate(year);
       const holidays = [
-        `${year}-01-01`,
-        formatDate(addDays(easter, 1)),
-        `${year}-05-01`,
-        `${year}-05-08`,
-        formatDate(addDays(easter, 39)),
-        formatDate(addDays(easter, 50)),
-        `${year}-07-14`,
-        `${year}-08-15`,
-        `${year}-11-01`,
-        `${year}-11-11`,
+        `${year}-01-01`, formatDate(addDays(easter, 1)),
+        `${year}-05-01`, `${year}-05-08`,
+        formatDate(addDays(easter, 39)), formatDate(addDays(easter, 50)),
+        `${year}-07-14`, `${year}-08-15`,
+        `${year}-11-01`, `${year}-11-11`,
         `${year}-12-25`
       ];
+      return holidays.includes(dateStr);
+    }
 
-      if (holidays.includes(dateStr)) return [{ start: "17:00", end: "18:00" }];
+    // --- Horaires d’ouverture selon jour et type ---
+    function getOpeningHours(day, dateStr, type) {
+      const holiday = isHoliday(dateStr);
 
+      // Dimanche ou jour férié
+      if (holiday || day === 0) {
+        if (type === "arrivee") return [{ start: "17:00", end: "18:00" }];
+        if (type === "depart") return [{ start: "11:00", end: "12:00" }, { start: "17:00", end: "18:00" }];
+      }
+
+      // Jours normaux
       switch (day) {
-        case 0: return [{ start: "17:00", end: "18:00" }];
         case 1:
         case 2: return [{ start: "09:00", end: "14:00" }, { start: "16:00", end: "17:00" }];
         case 3:
@@ -234,8 +236,8 @@
       }
     }
 
-    function generateTimeOptions(day, dateStr) {
-      const ranges = getOpeningHours(day, dateStr);
+    function generateTimeOptions(day, dateStr, type) {
+      const ranges = getOpeningHours(day, dateStr, type);
       const options = [];
       ranges.forEach(r => {
         let [h, m] = r.start.split(":").map(Number);
@@ -251,11 +253,11 @@
       return options;
     }
 
-    function updateHourOptions(dateInput, selectInput) {
+    function updateHourOptions(dateInput, selectInput, type) {
       const date = new Date(dateInput.value);
       if (isNaN(date)) return;
       const day = date.getDay();
-      const times = generateTimeOptions(day, dateInput.value);
+      const times = generateTimeOptions(day, dateInput.value, type);
       selectInput.innerHTML = "";
       times.forEach(t => {
         const opt = document.createElement("option");
@@ -276,12 +278,13 @@
     const todayStr = getToday();
     dateArriveeInput.value = todayStr;
     dateDepartInput.value = todayStr;
-    updateHourOptions(dateArriveeInput, heureArriveeSelect);
-    updateHourOptions(dateDepartInput, heureDepartSelect);
+    updateHourOptions(dateArriveeInput, heureArriveeSelect, "arrivee");
+    updateHourOptions(dateDepartInput, heureDepartSelect, "depart");
 
-    dateArriveeInput.addEventListener("change", () => updateHourOptions(dateArriveeInput, heureArriveeSelect));
-    dateDepartInput.addEventListener("change", () => updateHourOptions(dateDepartInput, heureDepartSelect));
+    dateArriveeInput.addEventListener("change", () => updateHourOptions(dateArriveeInput, heureArriveeSelect, "arrivee"));
+    dateDepartInput.addEventListener("change", () => updateHourOptions(dateDepartInput, heureDepartSelect, "depart"));
 
+    // --- Noms des chiens dynamiques ---
     function updateNomsChiens() {
       const nb = parseInt(nbChienInput.value) || 0;
       nomsChiensContainer.innerHTML = "";
@@ -299,6 +302,7 @@
     nbChienInput.addEventListener("input", updateNomsChiens);
     updateNomsChiens();
 
+    // --- Envoi Supabase ---
     form.addEventListener("submit", async e => {
       e.preventDefault();
       message.textContent = "Envoi en cours...";
