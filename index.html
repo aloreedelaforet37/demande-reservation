@@ -273,6 +273,18 @@ dateDepartInput.addEventListener("change",()=>{
   updateHourOptions(dateDepartInput,heureDepartSelect,"depart",minTime);
 });
 
+// --- Nouvelle partie : mise à jour départ quand heure d'arrivée change ---
+heureArriveeSelect.addEventListener("change", () => {
+  if(dateArriveeInput.value === dateDepartInput.value) {
+    const minTime = heureArriveeSelect.value;
+    const currentDepart = heureDepartSelect.value;
+    updateHourOptions(dateDepartInput, heureDepartSelect, "depart", minTime);
+    if(heureDepartSelect.value < minTime) {
+      heureDepartSelect.value = heureDepartSelect.options[0]?.value || "";
+    }
+  }
+});
+
 // --- Soumission ---
 form.addEventListener("submit",async e=>{
   e.preventDefault();
@@ -312,4 +324,3 @@ form.addEventListener("submit",async e=>{
 </script>
 </body>
 </html>
-
