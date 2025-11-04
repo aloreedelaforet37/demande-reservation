@@ -95,19 +95,12 @@
     .success { color: #2e7d32; }
     .error { color: #b71c1c; }
 
-    /* Date + Heure côte à côte avec espace, même sur mobile */
+    /* Date + Heure côte à côte avec espace */
     .datetime-group { display: flex; flex-direction: column; margin-top: 1rem; }
     .datetime-fields { display: flex; gap: 0.5rem; flex-wrap: wrap; }
     .datetime-fields input, .datetime-fields select { flex: 1; }
     .datetime-fields input { border-radius: 12px 0 0 12px; border-right: none; }
     .datetime-fields select { border-radius: 0 12px 12px 0; }
-
-    @media (max-width: 500px) {
-      .datetime-fields { flex-wrap: nowrap; }
-      .datetime-fields input, .datetime-fields select { flex: 1; }
-      .datetime-fields input { border-radius: 12px 0 0 12px; border-right: none; }
-      .datetime-fields select { border-radius: 0 12px 12px 0; }
-    }
   </style>
 </head>
 
@@ -173,13 +166,32 @@
     const nomsChiensContainer = document.getElementById("nomsChiensContainer");
     const encartFermeture = document.getElementById("encartFermeture");
 
-    // --- Validation nombre de chiens >=1 ---
-    nbChienInput.addEventListener("input", () => {
-      if (!nbChienInput.value || nbChienInput.value < 1) nbChienInput.value = 1;
-      updateNomsChiens();
-    });
+    // --- Périodes de fermeture ---
+    const periodesFermees = [
+      { debut: "2025-11-19", fin: "2025-11-26" },
+      { debut: "2025-12-20", fin: "2025-12-26" },
+      { debut: "2026-02-22", fin: "2026-02-28" }
+    ];
+    function afficherEncartFermeture() {
+      const aujourdHui = new Date();
+      let contenu = "🌲 <strong>Périodes de fermeture :</strong><br>";
+      let proche = false;
+      periodesFermees.forEach(p => {
+        const debut = new Date(p.debut);
+        const fin = new Date(p.fin);
+        const debutTxt = debut.toLocaleDateString("fr-FR", { day: '2-digit', month: 'long', year: 'numeric' });
+        const finTxt = fin.toLocaleDateString("fr-FR", { day: '2-digit', month: 'long', year: 'numeric' });
+        contenu += `• du <strong>${debutTxt}</strong> au <strong>${finTxt}</strong><br>`;
+        const diffJours = Math.floor((debut - aujourdHui) / (1000 * 60 * 60 * 24));
+        if (diffJours >= 0 && diffJours <= 15) proche = true;
+      });
+      encartFermeture.innerHTML = contenu;
+      encartFermeture.style.background = proche ? "#FFF5E5" : "#fff";
+      encartFermeture.style.borderColor = proche ? "#E6B800" : "#b6dab8";
+    }
+    afficherEncartFermeture();
 
-    // --- Champs noms des chiens ---
+    // --- Champs noms des chiens dynamiques ---
     function updateNomsChiens() {
       const nb = parseInt(nbChienInput.value) || 1;
       nomsChiensContainer.innerHTML = "";
@@ -194,6 +206,10 @@
         nomsChiensContainer.appendChild(input);
       }
     }
+    nbChienInput.addEventListener("input", () => {
+      if (!nbChienInput.value || nbChienInput.value < 1) nbChienInput.value = 1;
+      updateNomsChiens();
+    });
     updateNomsChiens();
 
     // --- Horaires ---
@@ -262,6 +278,7 @@
     });
     dateDepartInput.addEventListener("change",()=>{ if(dateDepartInput.value<dateArriveeInput.value) dateDepartInput.value=dateArriveeInput.value; updateHourOptions(dateDepartInput,heureDepartSelect,"depart"); });
 
+    // --- Soumission ---
     form.addEventListener("submit", async e=>{
       e.preventDefault();
       if(!heureArriveeSelect.value){ message.textContent="❌ Choisissez un créneau d'arrivée."; message.className="error"; return;}
