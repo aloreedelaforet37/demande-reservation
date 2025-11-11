@@ -176,7 +176,7 @@ const periodesFermees = [
 ];
 function afficherEncartFermeture() {
   const aujourdHui = new Date();
-  let contenu = "🌲 <strong>Périodes de fermeture :</strong><br>";
+  let contenu = "<strong>Périodes de fermeture :</strong><br>";
   let proche = false;
   periodesFermees.forEach(p => {
     const debut = new Date(p.debut);
@@ -328,5 +328,6 @@ form.addEventListener("submit",async e=>{
 </script>
 </body>
 </html>
+
 
 
