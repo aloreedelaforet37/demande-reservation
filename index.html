@@ -162,13 +162,13 @@ dateArriveeInput.addEventListener("change", ()=>{
 });
 
 // --- Format date jj mois aaaa à HHhMM ---
-function formatDateFR(dateStr, timeStr){
-  if(!dateStr || !timeStr) return "";
-  const date = new Date(dateStr + "T" + timeStr);
-  const day = date.toLocaleDateString("fr-FR", {day:"2-digit", month:"long", year:"numeric"});
-  const h = date.getHours().toString().padStart(2,"0");
-  const m = date.getMinutes().toString().padStart(2,"0");
-  return `${day} à ${h}h${m}`;
+function formatDateFrancais(dateStr, heureStr) {
+    const date = new Date(dateStr + "T" + heureStr);
+    const options = { day: "2-digit", month: "long", year: "numeric" };
+    const dateFormatee = date.toLocaleDateString("fr-FR", options);
+    const heures = date.getHours().toString().padStart(2, "0");
+    const minutes = date.getMinutes().toString().padStart(2, "0");
+    return `${dateFormatee} à ${heures}h${minutes}`;
 }
 
 // --- SUBMIT ---
@@ -194,9 +194,12 @@ form.addEventListener("submit", async e=>{
   try{
     const {error} = await supabaseClient.from("reservations").insert([reservation]);
     if(error) { showPopup("❌ Erreur : "+error.message); return; }
+    const message = `Votre réservation a été enregistrée avec succès
+      du ${formatDateFrancais(reservation.date_arrivee, reservation.heure_arrivee)}
+      au ${formatDateFrancais(reservation.date_depart, reservation.heure_depart)}.
 
-    const message = `✅ Votre réservation a bien été enregistrée du ${formatDateFR(reservation.date_arrivee,reservation.heure_arrivee)} ` +
-                    `au ${formatDateFR(reservation.date_depart,reservation.heure_depart)}.\nNous vous tiendrons informé de la disponibilité.`;
+    Nous vous tiendrons informé(e) dès que possible de la disponibilité.`;
+    
 
     showPopup(message);
 
@@ -223,6 +226,7 @@ form.addEventListener("submit", async e=>{
 </script>
 </body>
 </html>
+
 
 
 
