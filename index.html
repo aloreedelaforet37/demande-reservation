@@ -213,7 +213,7 @@ function afficherEncartFermeture(){
     const fin = new Date(p.fin);
     const debutTxt = debut.toLocaleDateString("fr-FR", { day:'2-digit', month:'long', year:'numeric' });
     const finTxt = fin.toLocaleDateString("fr-FR", { day:'2-digit', month:'long', year:'numeric' });
-    contenu += `• du ${debutTxt}</strong> au <strong>${finTxt}<br>`;
+    contenu += `• du ${debutTxt} au ${finTxt}<br>`;
   });
   encartFermeture.innerHTML = contenu;
 }
@@ -345,4 +345,5 @@ form.addEventListener("submit", async e=>{
 </script>
 </body>
 </html>
+
 
