@@ -82,15 +82,15 @@ button:hover { transform: scale(1.02); box-shadow: 0 4px 12px rgba(0,0,0,0.15); 
 </div>
 
 <script>
-/* --- INIT EMAILJS --- */
-(function(){ emailjs.init("YOUR_EMAILJS_PUBLIC_KEY"); })(); // <-- remplacer par ta clé EmailJS
+// --- INIT EmailJS ---
+emailjs.init("TkIYwxbaOkvcJS5Ih"); // <-- remplacer par ta clé publique EmailJS
 
-/* --- SUPABASE --- */
+// --- SUPABASE ---
 const SUPABASE_URL = 'https://usatdvopaaxrxjiqhgju.supabase.co';
-const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InVzYXRkdm9wYWF4cnhqaXFoZ2p1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTk1MjUzNDUsImV4cCI6MjA3NTEwMTM0NX0.D52GPw5yZUJWN1oZD_sop7F7nU9WZLM5OMof1TI3IMc';
+const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InVzYXRkdm9wYWF4cnhqaXFoZ2p1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTk1MjUzNDUsImV4cCI6MjA3NTEwMTM0NX0.D52GPw5yZUJWN1oZD_sop7F7nU9WZLM5OMof1TI3IMc'; // <-- remplacer par ta clé Supabase
 const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-/* --- ELEMENTS --- */
+// --- ELEMENTS ---
 const form = document.getElementById("reservationForm");
 const dateArriveeInput = document.getElementById("dateArrivee");
 const dateDepartInput = document.getElementById("dateDepart");
@@ -100,14 +100,14 @@ const nbChienInput = form.querySelector('input[name="nb_chien"]');
 const nomsChiensContainer = document.getElementById("nomsChiensContainer");
 const encartFermeture = document.getElementById("encartFermeture");
 
-/* --- POPUP --- */
+// --- POPUP ---
 const popup = document.getElementById("popupMessage");
 const popupText = document.getElementById("popupText");
 const popupClose = document.getElementById("popupClose");
 function showPopup(msg){ popupText.textContent = msg; popup.style.display="flex"; }
 popupClose.addEventListener("click", ()=>{ popup.style.display="none"; });
 
-/* --- Fermetures --- */
+// --- Fermetures ---
 const periodesFermees = [
   { debut: "2025-12-20", fin: "2025-12-26" },
   { debut: "2026-02-22", fin: "2026-02-28" },
@@ -128,7 +128,7 @@ function afficherEncartFermeture() {
 }
 afficherEncartFermeture();
 
-/* --- Noms chiens dynamiques --- */
+// --- Noms chiens dynamiques ---
 function updateNomsChiens(){
   let nb=parseInt(nbChienInput.value)||1; if(nb<1) nb=1; nbChienInput.value=nb;
   nomsChiensContainer.innerHTML="";
@@ -141,19 +141,19 @@ function updateNomsChiens(){
 nbChienInput.addEventListener("input", updateNomsChiens);
 updateNomsChiens();
 
-/* --- Horaires simplifiées --- */
+// --- Horaires simplifiées ---
 function generateTimeOptions(){ return ["09:00","10:00","11:00","12:00","13:00","14:00","15:00","16:00","17:00"]; }
 function updateHourOptions(selectInput){ selectInput.innerHTML=""; generateTimeOptions().forEach(t=>{ const opt=document.createElement("option"); opt.value=t; opt.textContent=t; selectInput.appendChild(opt);}); }
 updateHourOptions(heureArriveeSelect); updateHourOptions(heureDepartSelect);
 
-/* --- Initialiser dates à aujourd'hui --- */
+// --- Initialiser dates à aujourd'hui ---
 const todayStr = new Date().toISOString().split("T")[0];
 dateArriveeInput.value = todayStr;
 dateDepartInput.value = todayStr;
 dateArriveeInput.min = todayStr;
 dateDepartInput.min = todayStr;
 
-/* --- Copier date arrivée dans date départ --- */
+// --- Copier date arrivée dans date départ ---
 dateArriveeInput.addEventListener("change", ()=>{
     if(dateArriveeInput.value){
         dateDepartInput.value = dateArriveeInput.value;
@@ -161,14 +161,17 @@ dateArriveeInput.addEventListener("change", ()=>{
     }
 });
 
-/* --- Format date jj mois aaaa à hh:mm --- */
+// --- Format date jj mois aaaa à HHhMM ---
 function formatDateFR(dateStr, timeStr){
   if(!dateStr || !timeStr) return "";
   const date = new Date(dateStr + "T" + timeStr);
-  return date.toLocaleDateString("fr-FR", {day:"2-digit", month:"long", year:"numeric"}) + " à " + date.toLocaleTimeString("fr-FR",{hour:"2-digit",minute:"2-digit"});
+  const day = date.toLocaleDateString("fr-FR", {day:"2-digit", month:"long", year:"numeric"});
+  const h = date.getHours().toString().padStart(2,"0");
+  const m = date.getMinutes().toString().padStart(2,"0");
+  return `${day} à ${h}h${m}`;
 }
 
-/* --- SUBMIT --- */
+// --- SUBMIT ---
 form.addEventListener("submit", async e=>{
   e.preventDefault();
   if(!heureArriveeSelect.value || !heureDepartSelect.value){ showPopup("⚠️ Choisissez les créneaux horaires."); return; }
@@ -207,9 +210,11 @@ form.addEventListener("submit", async e=>{
       from_email: "a.l.oree.de.la.foret.37@gmail.com",
       to_email: reservation.email,
       to_name: reservation.nom_proprietaire,
+      subject: "Votre réservation a bien été enregistrée",
       message: message
     };
-    emailjs.send("YOUR_SERVICE_ID","YOUR_TEMPLATE_ID", emailParams)
+
+    emailjs.send("service_22ypgkl","template_i2nke5k", emailParams)
       .then(()=>console.log("Email envoyé avec succès !"))
       .catch(err=>console.error("Erreur envoi email :", err));
 
@@ -218,4 +223,3 @@ form.addEventListener("submit", async e=>{
 </script>
 </body>
 </html>
-
