@@ -168,7 +168,7 @@ function formatDateFrancais(dateStr, heureStr) {
     const dateFormatee = date.toLocaleDateString("fr-FR", options);
     const heures = date.getHours().toString().padStart(2, "0");
     const minutes = date.getMinutes().toString().padStart(2, "0");
-    return `${dateFormatee} à ${heures}h${minutes}`;
+    return `<strong>${dateFormatee} à ${heures}h${minutes}</strong>`;
 }
 
 // --- SUBMIT ---
@@ -194,10 +194,11 @@ form.addEventListener("submit", async e=>{
   try{
     const {error} = await supabaseClient.from("reservations").insert([reservation]);
     if(error) { showPopup("❌ Erreur : "+error.message); return; }
-    const message = `Votre réservation a été enregistrée avec succès
-      du ${formatDateFrancais(reservation.date_arrivee, reservation.heure_arrivee)}
-      au ${formatDateFrancais(reservation.date_depart, reservation.heure_depart)}.
-
+    const message = `Votre réservation a été enregistrée avec succès<br>
+    <div style="margin-left: 20px;">
+      du ${formatDateFrancais(reservation.date_arrivee, reservation.heure_arrivee)}<br>
+      au ${formatDateFrancais(reservation.date_depart, reservation.heure_depart)}
+    </div><br>
     Nous vous tiendrons informé(e) dès que possible de la disponibilité.`;
     
 
@@ -226,6 +227,7 @@ form.addEventListener("submit", async e=>{
 </script>
 </body>
 </html>
+
 
 
 
