@@ -207,12 +207,12 @@ const periodesFermees = [
   { debut: "2026-12-19", fin: "2026-12-27" }
 ];
 function afficherEncartFermeture(){
-  let contenu = "<strong>Périodes de fermeture 2025 / 2026 :</strong><br>";
+  let contenu = "<strong>Périodes de fermeture :</strong><br>";
   periodesFermees.forEach(p => {
     const debut = new Date(p.debut);
     const fin = new Date(p.fin);
-    const debutTxt = debut.toLocaleDateString("fr-FR", { day:'2-digit', month:'long', year:'numeric' });
-    const finTxt = fin.toLocaleDateString("fr-FR", { day:'2-digit', month:'long', year:'numeric' });
+    const debutTxt = debut.toLocaleDateString("fr-FR"); // jj/mm/yyyy
+    const finTxt = fin.toLocaleDateString("fr-FR");     // jj/mm/yyyy
     contenu += `• du ${debutTxt} au ${finTxt}<br>`;
   });
   encartFermeture.innerHTML = contenu;
@@ -345,5 +345,6 @@ form.addEventListener("submit", async e=>{
 </script>
 </body>
 </html>
+
 
 
