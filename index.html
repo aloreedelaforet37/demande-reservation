@@ -1,37 +1,148 @@
 <!DOCTYPE html>
 <html lang="fr">
 <head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1" />
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Réservation - À l'Orée de la Forêt</title>
+<link href="https://fonts.googleapis.com/css2?family=Pacifico&family=Roboto:wght@300;400;500&display=swap" rel="stylesheet">
+
+<!-- Supabase JS -->
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<script type="text/javascript" src="https://cdn.jsdelivr.net/npm/emailjs-com@3/dist/email.min.js"></script>
-<link href="https://fonts.googleapis.com/css2?family=Pacifico&family=Roboto:wght@300;400;500&display=swap" rel="stylesheet" />
+<!-- EmailJS -->
+<script src="https://cdn.jsdelivr.net/npm/emailjs-com@3/dist/email.min.js"></script>
+
 <style>
-:root { --vert-clair: #cfead2; --vert-fonce: #5c8a63; --brun-texte: #4a3c31; }
-body { font-family: 'Roboto', sans-serif; background: #ffffff; min-height: 100vh; display: flex; justify-content: center; align-items: center; padding: 2rem; }
-.form-container { background: var(--vert-clair); border-radius: 24px; box-shadow: 0 8px 25px rgba(0,0,0,0.08); max-width: 520px; width: 100%; padding: 2rem 2.5rem; text-align: center; position: relative;}
-.form-container img { max-width: 140px; height: auto; margin-bottom: 1rem; }
-h1 { color: var(--brun-texte); font-size: 1.6rem; margin-bottom: 1rem; line-height: 1.3; }
-.subtitle-script { display: block; font-size: 1rem; color: var(--brun-texte); margin-top: 0.3rem; }
-#encartFermeture { border: 2px solid #b6dab8; border-radius: 12px; padding: 1rem; text-align: left; margin-bottom: 1.5rem; font-size: 0.85rem; color: var(--brun-texte); background: #fff; }
-label { display: block; text-align: left; color: var(--brun-texte); font-weight: 500; margin-top: 1rem; margin-bottom: 0.3rem; }
-input, select, textarea { width: 100%; padding: 0.7rem 0.9rem; border-radius: 12px; border: 1px solid #c9b6a4; background-color: #fff; font-size: 1rem; box-sizing: border-box; }
-button { background: linear-gradient(135deg, var(--vert-clair), var(--vert-fonce)); color: white; border: none; padding: 0.8rem 1rem; border-radius: 14px; font-size: 1.1rem; font-weight: bold; margin-top: 1.8rem; width: 100%; cursor: pointer; transition: transform 0.1s ease, box-shadow 0.1s ease; }
-button:hover { transform: scale(1.02); box-shadow: 0 4px 12px rgba(0,0,0,0.15); }
+:root {
+  --vert-clair: #cfead2;
+  --vert-fonce: #5c8a63;
+  --brun-texte: #4a3c31;
+}
+
+body {
+  font-family: 'Roboto', sans-serif;
+  background: #ffffff;
+  min-height: 100vh;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 2rem;
+}
+
+.form-container {
+  background: var(--vert-clair);
+  border-radius: 24px;
+  box-shadow: 0 8px 25px rgba(0,0,0,0.08);
+  max-width: 520px;
+  width: 100%;
+  padding: 2rem 2.5rem;
+  text-align: center;
+}
+
+.form-container img {
+  max-width: 140px;
+  height: auto;
+  margin-bottom: 1rem;
+}
+
+h1 {
+  color: var(--brun-texte);
+  font-size: 1.5rem; /* réduit */
+  margin-bottom: 1rem;
+  line-height: 1.3;
+}
+
+.subtitle-script {
+  display: block;
+  font-size: 0.95rem; /* réduit */
+  color: var(--brun-texte);
+  margin-top: 0.3rem;
+}
+
+#encartFermeture {
+  border: 2px solid #b6dab8;
+  border-radius: 12px;
+  padding: 1rem;
+  text-align: left;
+  margin-bottom: 1.5rem;
+  font-size: 0.75rem; /* réduit */
+  color: var(--brun-texte);
+  background: #fff;
+}
+
+label {
+  display: block;
+  text-align: left;
+  color: var(--brun-texte);
+  font-weight: 500;
+  margin-top: 1rem;
+  margin-bottom: 0.3rem;
+}
+
+input, select, textarea {
+  width: 100%;
+  padding: 0.7rem 0.9rem;
+  border-radius: 12px;
+  border: 1px solid #c9b6a4;
+  background-color: #fff;
+  font-size: 1rem;
+  box-sizing: border-box;
+}
+
+button {
+  background: linear-gradient(135deg, var(--vert-clair), var(--vert-fonce));
+  color: white;
+  border: none;
+  padding: 0.8rem 1rem;
+  border-radius: 14px;
+  font-size: 1.1rem;
+  font-weight: bold;
+  margin-top: 1.8rem;
+  width: 100%;
+  cursor: pointer;
+  transition: transform 0.1s ease, box-shadow 0.1s ease;
+}
+
+button:hover {
+  transform: scale(1.02);
+  box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+}
+
+#message { margin-top: 1rem; font-weight: 500; }
+.success { color: #2e7d32; }
+.error { color: #b71c1c; }
+
+/* Date + Heure côte à côte */
 .datetime-group { display: flex; flex-direction: column; margin-top: 1rem; }
 .datetime-fields { display: flex; gap: 0.5rem; flex-wrap: wrap; }
 .datetime-fields input, .datetime-fields select { flex: 1; }
 .datetime-fields input { border-radius: 12px 0 0 12px; border-right: none; }
 .datetime-fields select { border-radius: 0 12px 12px 0; }
-#popupMessage { display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.5); z-index:9999; justify-content:center; align-items:center; }
-#popupMessage div { background:#fff; padding:2rem; border-radius:16px; max-width:400px; width:90%; text-align:center; position:relative; }
-#popupMessage p { font-size:1.1rem; color:#333; margin-bottom:1.5rem; white-space: pre-line; }
-#popupMessage button { background:var(--vert-fonce); color:#fff; padding:0.7rem 1.2rem; border:none; border-radius:12px; font-size:1rem; cursor:pointer; }
+
+/* Popup */
+.popup {
+  position: fixed;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background: rgba(0,0,0,0.4);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 9999;
+}
+.popup-content {
+  background: #fff;
+  padding: 1.8rem 2rem;
+  border-radius: 12px;
+  max-width: 400px;
+  text-align: left;
+}
+.popup-content button {
+  margin-top: 1rem;
+  width: auto;
+}
 </style>
 </head>
-<body>
 
+<body>
 <div class="form-container">
   <img src="logo.png" alt="Logo À l'Orée de la Forêt" />
   <h1>
@@ -54,16 +165,16 @@ button:hover { transform: scale(1.02); box-shadow: 0 4px 12px rgba(0,0,0,0.15); 
     <div class="datetime-group">
       <label>Arrivée</label>
       <div class="datetime-fields">
-        <input type="date" id="dateArrivee" name="date_arrivee" />
-        <select id="heureArrivee" name="heure_arrivee"></select>
+        <input type="date" id="dateArrivee" name="date_arrivee" required />
+        <select id="heureArrivee" name="heure_arrivee" required></select>
       </div>
     </div>
 
     <div class="datetime-group">
       <label>Départ</label>
       <div class="datetime-fields">
-        <input type="date" id="dateDepart" name="date_depart" />
-        <select id="heureDepart" name="heure_depart"></select>
+        <input type="date" id="dateDepart" name="date_depart" required />
+        <select id="heureDepart" name="heure_depart" required></select>
       </div>
     </div>
 
@@ -72,42 +183,20 @@ button:hover { transform: scale(1.02); box-shadow: 0 4px 12px rgba(0,0,0,0.15); 
 
     <button type="submit">Envoyer la réservation</button>
   </form>
-</div>
 
-<div id="popupMessage">
-  <div>
-    <p id="popupText"></p>
-    <button id="popupClose">OK</button>
-  </div>
+  <div id="message"></div>
 </div>
 
 <script>
-// --- INIT EmailJS ---
-emailjs.init("t6YY80T3DDql9uy32"); // <-- remplacer par ta clé publique EmailJS
-
-// --- SUPABASE ---
 const SUPABASE_URL = 'https://usatdvopaaxrxjiqhgju.supabase.co';
-const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InVzYXRkdm9wYWF4cnhqaXFoZ2p1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTk1MjUzNDUsImV4cCI6MjA3NTEwMTM0NX0.D52GPw5yZUJWN1oZD_sop7F7nU9WZLM5OMof1TI3IMc'; // <-- remplacer par ta clé Supabase
+const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InVzYXRkdm9wYWF4cnhqaXFoIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTk1MjUzNDUsImV4cCI6MjA3NTEwMTM0NX0.D52GPw5yZUJWN1oZD_sop7F7nU9WZLM5OMof1TI3IMc';
 const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-// --- ELEMENTS ---
-const form = document.getElementById("reservationForm");
-const dateArriveeInput = document.getElementById("dateArrivee");
-const dateDepartInput = document.getElementById("dateDepart");
-const heureArriveeSelect = document.getElementById("heureArrivee");
-const heureDepartSelect = document.getElementById("heureDepart");
-const nbChienInput = form.querySelector('input[name="nb_chien"]');
-const nomsChiensContainer = document.getElementById("nomsChiensContainer");
+// --- EmailJS ---
+emailjs.init("t6YY80T3DDql9uy32");
+
+// --- Encarts fermetures ---
 const encartFermeture = document.getElementById("encartFermeture");
-
-// --- POPUP ---
-const popup = document.getElementById("popupMessage");
-const popupText = document.getElementById("popupText");
-const popupClose = document.getElementById("popupClose");
-function showPopup(msg){ popupText.textContent = msg; popup.style.display="flex"; }
-popupClose.addEventListener("click", ()=>{ popup.style.display="none"; });
-
-// --- Fermetures ---
 const periodesFermees = [
   { debut: "2025-12-20", fin: "2025-12-26" },
   { debut: "2026-02-22", fin: "2026-02-28" },
@@ -117,64 +206,81 @@ const periodesFermees = [
   { debut: "2026-10-16", fin: "2026-10-24" },
   { debut: "2026-12-19", fin: "2026-12-27" }
 ];
-function afficherEncartFermeture() {
-  let contenu = "<strong>Périodes de fermeture 2025 / 2026:</strong><br>";
-  periodesFermees.forEach(p=>{
+function afficherEncartFermeture(){
+  let contenu = "<strong>Périodes de fermeture :</strong><br>";
+  periodesFermees.forEach(p => {
     const debut = new Date(p.debut);
     const fin = new Date(p.fin);
-    contenu+=`• du ${debut.toLocaleDateString('fr-FR')} au ${fin.toLocaleDateString('fr-FR')}<br>`;
+    const debutTxt = debut.toLocaleDateString("fr-FR", { day:'2-digit', month:'long', year:'numeric' });
+    const finTxt = fin.toLocaleDateString("fr-FR", { day:'2-digit', month:'long', year:'numeric' });
+    contenu += `• du <strong>${debutTxt}</strong> au <strong>${finTxt}</strong><br>`;
   });
   encartFermeture.innerHTML = contenu;
 }
 afficherEncartFermeture();
 
-// --- Noms chiens dynamiques ---
+// --- Gestion Noms des chiens ---
+const nbChienInput = document.querySelector('input[name="nb_chien"]');
+const nomsChiensContainer = document.getElementById("nomsChiensContainer");
 function updateNomsChiens(){
-  let nb=parseInt(nbChienInput.value)||1; if(nb<1) nb=1; nbChienInput.value=nb;
-  nomsChiensContainer.innerHTML="";
+  let nb = parseInt(nbChienInput.value)||1;
+  if(nb<1) nb=1;
+  nbChienInput.value = nb;
+  nomsChiensContainer.innerHTML = "";
   for(let i=1;i<=nb;i++){
-    const label=document.createElement("label"); label.textContent=nb===1?"Nom du chien":`Nom du chien ${i}`;
-    const input=document.createElement("input"); input.type="text"; input.name=`nom_chien_input_${i}`; input.required=true;
-    nomsChiensContainer.appendChild(label); nomsChiensContainer.appendChild(input);
+    const label=document.createElement("label");
+    label.textContent = nb===1?"Nom du chien":`Nom du chien ${i}`;
+    const input=document.createElement("input");
+    input.type="text";
+    input.name=`nom_chien_input_${i}`;
+    input.required=true;
+    nomsChiensContainer.appendChild(label);
+    nomsChiensContainer.appendChild(input);
   }
 }
 nbChienInput.addEventListener("input", updateNomsChiens);
 updateNomsChiens();
 
-// --- Horaires simplifiées ---
-function generateTimeOptions(){ return ["09:00","10:00","11:00","12:00","13:00","14:00","15:00","16:00","17:00"]; }
-function updateHourOptions(selectInput){ selectInput.innerHTML=""; generateTimeOptions().forEach(t=>{ const opt=document.createElement("option"); opt.value=t; opt.textContent=t; selectInput.appendChild(opt);}); }
-updateHourOptions(heureArriveeSelect); updateHourOptions(heureDepartSelect);
+// --- Date / Heure ---
+const dateArriveeInput = document.getElementById("dateArrivee");
+const dateDepartInput = document.getElementById("dateDepart");
+const heureArriveeSelect = document.getElementById("heureArrivee");
+const heureDepartSelect = document.getElementById("heureDepart");
 
-// --- Initialiser dates à aujourd'hui ---
-const todayStr = new Date().toISOString().split("T")[0];
+function formatDate(date){ return date.toISOString().split("T")[0]; }
+const todayStr = formatDate(new Date());
 dateArriveeInput.value = todayStr;
 dateDepartInput.value = todayStr;
 dateArriveeInput.min = todayStr;
 dateDepartInput.min = todayStr;
 
-// --- Copier date arrivée dans date départ ---
-dateArriveeInput.addEventListener("change", ()=>{
-    if(dateArriveeInput.value){
-        dateDepartInput.value = dateArriveeInput.value;
-        dateDepartInput.min = dateArriveeInput.value;
-    }
-});
-
-// --- Format date jj mois aaaa à HHhMM ---
-function formatDateFrancais(dateStr, heureStr) {
+// --- Popup ---
+function formatDateFrancais(dateStr, heureStr){
     const date = new Date(dateStr + "T" + heureStr);
-    const options = { day: "2-digit", month: "long", year: "numeric" };
+    const options = { day:"2-digit", month:"long", year:"numeric" };
     const dateFormatee = date.toLocaleDateString("fr-FR", options);
-    const heures = date.getHours().toString().padStart(2, "0");
-    const minutes = date.getMinutes().toString().padStart(2, "0");
+    const heures = date.getHours().toString().padStart(2,"0");
+    const minutes = date.getMinutes().toString().padStart(2,"0");
     return `<strong>${dateFormatee} à ${heures}h${minutes}</strong>`;
 }
 
-// --- SUBMIT ---
+function showPopup(message){
+  const popup = document.createElement("div");
+  popup.classList.add("popup");
+  popup.innerHTML = `
+    <div class="popup-content">
+      ${message}
+      <button id="closePopup">OK</button>
+    </div>
+  `;
+  document.body.appendChild(popup);
+  document.getElementById("closePopup").addEventListener("click",()=>popup.remove());
+}
+
+// --- Formulaire ---
+const form = document.getElementById("reservationForm");
 form.addEventListener("submit", async e=>{
   e.preventDefault();
-  if(!heureArriveeSelect.value || !heureDepartSelect.value){ showPopup("⚠️ Choisissez les créneaux horaires."); return; }
 
   const formData = new FormData(form);
   const reservation = {
@@ -188,50 +294,54 @@ form.addEventListener("submit", async e=>{
     heure_depart: formData.get("heure_depart"),
     remarque: formData.get("remarque")
   };
-  for(let i=1;i<=reservation.nb_chien;i++){ const n=formData.get(`nom_chien_input_${i}`); if(n) reservation.nom_chien.push(n); }
-  reservation.nom_chien=reservation.nom_chien.join(",");
+  for(let i=1;i<=reservation.nb_chien;i++){
+    reservation.nom_chien.push(formData.get(`nom_chien_input_${i}`));
+  }
+  reservation.nom_chien = reservation.nom_chien.join(",");
 
-  try{
-    const {error} = await supabaseClient.from("reservations").insert([reservation]);
-    if(error) { showPopup("❌ Erreur : "+error.message); return; }
-    const message = `Votre réservation a été enregistrée avec succès<br>
-    <div style="margin-left: 20px;">
-      du ${formatDateFrancais(reservation.date_arrivee, reservation.heure_arrivee)}<br>
-      au ${formatDateFrancais(reservation.date_depart, reservation.heure_depart)}
-    </div><br>
-    Nous vous tiendrons informé(e) dès que possible de la disponibilité.`;
-    
+  // --- Enregistrement Supabase ---
+  try {
+    const { error } = await supabaseClient.from("reservations").insert([reservation]);
+    if(error){
+      alert("Erreur lors de l'enregistrement dans la base de données: " + error.message);
+      return;
+    }
+  } catch(err){
+    alert("Erreur lors de l'enregistrement dans la base de données: " + (err.message||err));
+    return;
+  }
 
-    showPopup(message);
+  // --- Message popup et email ---
+  const message = `Votre réservation a été enregistrée avec succès<br>
+  <div style="margin-left:20px;">
+    du ${formatDateFrancais(reservation.date_arrivee,reservation.heure_arrivee)}<br>
+    au ${formatDateFrancais(reservation.date_depart,reservation.heure_depart)}
+  </div><br>
+  Nous vous tiendrons informé(e) dès que possible de la disponibilité.`;
 
-    form.reset(); 
-    dateArriveeInput.value = todayStr;
-    dateDepartInput.value = todayStr;
-    updateNomsChiens(); updateHourOptions(heureArriveeSelect); updateHourOptions(heureDepartSelect);
+  showPopup(message);
 
-    const emailParams = {
-      from_name: "Isabelle - Pension À l'Orée de la Forêt",
-      from_email: "a.l.oree.de.la.foret.37@gmail.com",
-      to_email: reservation.email,
-      //to_name: reservation.nom_proprietaire,
-      subject: "Votre réservation a bien été enregistrée",
-      message: message
-    };
+  // --- Envoi email ---
+  const emailParams = {
+    from_name: "Isabelle - Pension À l'Orée de la Forêt",
+    from_email: "a.l.oree.de.la.foret.37@gmail.com",
+    to_name: reservation.nom_proprietaire,
+    to_email: reservation.email,
+    subject: "Votre réservation a bien été enregistrée",
+    message: message
+  };
+  try {
+    await emailjs.send("service_22ypgkl","template_i2nke5k",emailParams);
+  } catch(err){
+    console.error("Erreur EmailJS :", err);
+  }
 
-    emailjs.send("service_22ypgkl","template_i2nke5k", emailParams)
-      .then(()=>console.log("Email envoyé avec succès !"))
-      .catch(err=>console.error("Erreur envoi email :", err));
-
-  } catch(err){ showPopup("⚡ Exception : "+(err.message||err)); }
+  // --- Reset form ---
+  form.reset();
+  dateArriveeInput.value = todayStr;
+  dateDepartInput.value = todayStr;
+  updateNomsChiens();
 });
 </script>
 </body>
 </html>
-
-
-
-
-
-
-
-
