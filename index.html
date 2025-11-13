@@ -8,11 +8,7 @@
 <script src="https://cdn.emailjs.com/dist/email.min.js"></script>
 <link href="https://fonts.googleapis.com/css2?family=Pacifico&family=Roboto:wght@300;400;500&display=swap" rel="stylesheet" />
 <style>
-:root {
-  --vert-clair: #cfead2;
-  --vert-fonce: #5c8a63;
-  --brun-texte: #4a3c31;
-}
+:root { --vert-clair: #cfead2; --vert-fonce: #5c8a63; --brun-texte: #4a3c31; }
 body { font-family: 'Roboto', sans-serif; background: #ffffff; min-height: 100vh; display: flex; justify-content: center; align-items: center; padding: 2rem; }
 .form-container { background: var(--vert-clair); border-radius: 24px; box-shadow: 0 8px 25px rgba(0,0,0,0.08); max-width: 520px; width: 100%; padding: 2rem 2.5rem; text-align: center; position: relative;}
 .form-container img { max-width: 140px; height: auto; margin-bottom: 1rem; }
@@ -28,7 +24,6 @@ button:hover { transform: scale(1.02); box-shadow: 0 4px 12px rgba(0,0,0,0.15); 
 .datetime-fields input, .datetime-fields select { flex: 1; }
 .datetime-fields input { border-radius: 12px 0 0 12px; border-right: none; }
 .datetime-fields select { border-radius: 0 12px 12px 0; }
-/* POPUP */
 #popupMessage { display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.5); z-index:9999; justify-content:center; align-items:center; }
 #popupMessage div { background:#fff; padding:2rem; border-radius:16px; max-width:400px; width:90%; text-align:center; position:relative; }
 #popupMessage p { font-size:1.1rem; color:#333; margin-bottom:1.5rem; white-space: pre-line; }
@@ -59,16 +54,16 @@ button:hover { transform: scale(1.02); box-shadow: 0 4px 12px rgba(0,0,0,0.15); 
     <div class="datetime-group">
       <label>Arrivée</label>
       <div class="datetime-fields">
-        <input type="date" id="dateArrivee" name="date_arrivee" required />
-        <select id="heureArrivee" name="heure_arrivee" required></select>
+        <input type="date" id="dateArrivee" name="date_arrivee" />
+        <select id="heureArrivee" name="heure_arrivee"></select>
       </div>
     </div>
 
     <div class="datetime-group">
       <label>Départ</label>
       <div class="datetime-fields">
-        <input type="date" id="dateDepart" name="date_depart" required />
-        <select id="heureDepart" name="heure_depart" required></select>
+        <input type="date" id="dateDepart" name="date_depart" />
+        <select id="heureDepart" name="heure_depart"></select>
       </div>
     </div>
 
@@ -79,7 +74,6 @@ button:hover { transform: scale(1.02); box-shadow: 0 4px 12px rgba(0,0,0,0.15); 
   </form>
 </div>
 
-<!-- POPUP -->
 <div id="popupMessage">
   <div>
     <p id="popupText"></p>
@@ -93,7 +87,7 @@ button:hover { transform: scale(1.02); box-shadow: 0 4px 12px rgba(0,0,0,0.15); 
 
 /* --- SUPABASE --- */
 const SUPABASE_URL = 'https://usatdvopaaxrxjiqhgju.supabase.co';
-const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InVzYXRkdm9wYWF4cnhqaXFoZ2p1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTk1MjUzNDUsImV4cCI6MjA3NTEwMTM0NX0.D52GPw5yZUJWN1oZD_sop7F7nU9WZLM5OMof1TI3IMc';
+const SUPABASE_ANON_KEY = 'YOUR_SUPABASE_ANON_KEY';
 const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
 /* --- ELEMENTS --- */
@@ -105,7 +99,6 @@ const heureDepartSelect = document.getElementById("heureDepart");
 const nbChienInput = form.querySelector('input[name="nb_chien"]');
 const nomsChiensContainer = document.getElementById("nomsChiensContainer");
 const encartFermeture = document.getElementById("encartFermeture");
-const todayStr = new Date().toISOString().split("T")[0];
 
 /* --- POPUP --- */
 const popup = document.getElementById("popupMessage");
@@ -153,6 +146,28 @@ function generateTimeOptions(){ return ["09:00","10:00","11:00","12:00","13:00",
 function updateHourOptions(selectInput){ selectInput.innerHTML=""; generateTimeOptions().forEach(t=>{ const opt=document.createElement("option"); opt.value=t; opt.textContent=t; selectInput.appendChild(opt);}); }
 updateHourOptions(heureArriveeSelect); updateHourOptions(heureDepartSelect);
 
+/* --- Initialiser dates à aujourd'hui --- */
+const todayStr = new Date().toISOString().split("T")[0];
+dateArriveeInput.value = todayStr;
+dateDepartInput.value = todayStr;
+dateArriveeInput.min = todayStr;
+dateDepartInput.min = todayStr;
+
+/* --- Copier date arrivée dans date départ --- */
+dateArriveeInput.addEventListener("change", ()=>{
+    if(dateArriveeInput.value){
+        dateDepartInput.value = dateArriveeInput.value;
+        dateDepartInput.min = dateArriveeInput.value;
+    }
+});
+
+/* --- Format date jj mois aaaa à hh:mm --- */
+function formatDateFR(dateStr, timeStr){
+  if(!dateStr || !timeStr) return "";
+  const date = new Date(dateStr + "T" + timeStr);
+  return date.toLocaleDateString("fr-FR", {day:"2-digit", month:"long", year:"numeric"}) + " à " + date.toLocaleTimeString("fr-FR",{hour:"2-digit",minute:"2-digit"});
+}
+
 /* --- SUBMIT --- */
 form.addEventListener("submit", async e=>{
   e.preventDefault();
@@ -177,18 +192,19 @@ form.addEventListener("submit", async e=>{
     const {error} = await supabaseClient.from("reservations").insert([reservation]);
     if(error) { showPopup("❌ Erreur : "+error.message); return; }
 
-    // --- Message simplifié ---
-    const message = `✅ Votre réservation a bien été enregistrée du ${reservation.date_arrivee} à ${reservation.heure_arrivee} ` +
-                    `au ${reservation.date_depart} à ${reservation.heure_depart}.\nNous vous tiendrons informé de la disponibilité.`;
+    const message = `✅ Votre réservation a bien été enregistrée du ${formatDateFR(reservation.date_arrivee,reservation.heure_arrivee)} ` +
+                    `au ${formatDateFR(reservation.date_depart,reservation.heure_depart)}.\nNous vous tiendrons informé de la disponibilité.`;
 
     showPopup(message);
 
-    // --- Reset form ---
-    form.reset(); dateArriveeInput.value=todayStr; dateDepartInput.value=todayStr;
+    form.reset(); 
+    dateArriveeInput.value = todayStr;
+    dateDepartInput.value = todayStr;
     updateNomsChiens(); updateHourOptions(heureArriveeSelect); updateHourOptions(heureDepartSelect);
 
-    // --- ENVOI EMAIL ---
     const emailParams = {
+      from_name: "Isabelle - Pension À l'Orée de la Forêt",
+      from_email: "a.l.oree.de.la.foret.37@gmail.com",
       to_email: reservation.email,
       to_name: reservation.nom_proprietaire,
       message: message
@@ -202,4 +218,3 @@ form.addEventListener("submit", async e=>{
 </script>
 </body>
 </html>
-
