@@ -14,7 +14,7 @@ body { font-family: 'Roboto', sans-serif; background: #ffffff; min-height: 100vh
 .form-container img { max-width: 140px; height: auto; margin-bottom: 1rem; }
 h1 { color: var(--brun-texte); font-size: 2rem; margin-bottom: 1rem; line-height: 1.3; }
 .subtitle-script { display: block; font-size: 1.1rem; color: var(--brun-texte); margin-top: 0.3rem; }
-#encartFermeture { border: 2px solid #b6dab8; border-radius: 12px; padding: 1rem; text-align: left; margin-bottom: 1.5rem; font-size: 0.95rem; color: var(--brun-texte); background: #fff; }
+#encartFermeture { border: 2px solid #b6dab8; border-radius: 12px; padding: 1rem; text-align: left; margin-bottom: 1.5rem; font-size: 0.85rem; color: var(--brun-texte); background: #fff; }
 label { display: block; text-align: left; color: var(--brun-texte); font-weight: 500; margin-top: 1rem; margin-bottom: 0.3rem; }
 input, select, textarea { width: 100%; padding: 0.7rem 0.9rem; border-radius: 12px; border: 1px solid #c9b6a4; background-color: #fff; font-size: 1rem; box-sizing: border-box; }
 button { background: linear-gradient(135deg, var(--vert-clair), var(--vert-fonce)); color: white; border: none; padding: 0.8rem 1rem; border-radius: 14px; font-size: 1.1rem; font-weight: bold; margin-top: 1.8rem; width: 100%; cursor: pointer; transition: transform 0.1s ease, box-shadow 0.1s ease; }
@@ -118,11 +118,11 @@ const periodesFermees = [
   { debut: "2026-12-19", fin: "2026-12-27" }
 ];
 function afficherEncartFermeture() {
-  let contenu = "<strong>Périodes de fermeture :</strong><br>";
+  let contenu = "<strong>Périodes de fermeture 2025 / 2026:</strong><br>";
   periodesFermees.forEach(p=>{
     const debut = new Date(p.debut);
     const fin = new Date(p.fin);
-    contenu+=`• du <strong>${debut.toLocaleDateString('fr-FR')}</strong> au <strong>${fin.toLocaleDateString('fr-FR')}</strong><br>`;
+    contenu+=`• du ${debut.toLocaleDateString('fr-FR')} au ${fin.toLocaleDateString('fr-FR')}<br>`;
   });
   encartFermeture.innerHTML = contenu;
 }
@@ -227,6 +227,7 @@ form.addEventListener("submit", async e=>{
 </script>
 </body>
 </html>
+
 
 
 
