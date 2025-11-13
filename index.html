@@ -6,9 +6,7 @@
 <title>Réservation - À l'Orée de la Forêt</title>
 <link href="https://fonts.googleapis.com/css2?family=Pacifico&family=Roboto:wght@300;400;500&display=swap" rel="stylesheet">
 
-<!-- Supabase JS -->
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<!-- EmailJS -->
 <script src="https://cdn.jsdelivr.net/npm/emailjs-com@3/dist/email.min.js"></script>
 
 <style>
@@ -17,7 +15,6 @@
   --vert-fonce: #5c8a63;
   --brun-texte: #4a3c31;
 }
-
 body {
   font-family: 'Roboto', sans-serif;
   background: #ffffff;
@@ -27,7 +24,6 @@ body {
   align-items: center;
   padding: 2rem;
 }
-
 .form-container {
   background: var(--vert-clair);
   border-radius: 24px;
@@ -37,38 +33,33 @@ body {
   padding: 2rem 2.5rem;
   text-align: center;
 }
-
 .form-container img {
   max-width: 140px;
   height: auto;
   margin-bottom: 1rem;
 }
-
 h1 {
   color: var(--brun-texte);
-  font-size: 1.5rem; /* réduit */
+  font-size: 1.6rem;
   margin-bottom: 1rem;
   line-height: 1.3;
 }
-
 .subtitle-script {
   display: block;
-  font-size: 0.85rem; /* réduit */
+  font-size: 1rem;
   color: var(--brun-texte);
   margin-top: 0.3rem;
 }
-
 #encartFermeture {
   border: 2px solid #b6dab8;
   border-radius: 12px;
   padding: 1rem;
   text-align: left;
   margin-bottom: 1.5rem;
-  font-size: 0.75rem; /* réduit */
+  font-size: 0.85rem;
   color: var(--brun-texte);
   background: #fff;
 }
-
 label {
   display: block;
   text-align: left;
@@ -77,7 +68,6 @@ label {
   margin-top: 1rem;
   margin-bottom: 0.3rem;
 }
-
 input, select, textarea {
   width: 100%;
   padding: 0.7rem 0.9rem;
@@ -87,7 +77,6 @@ input, select, textarea {
   font-size: 1rem;
   box-sizing: border-box;
 }
-
 button {
   background: linear-gradient(135deg, var(--vert-clair), var(--vert-fonce));
   color: white;
@@ -101,43 +90,37 @@ button {
   cursor: pointer;
   transition: transform 0.1s ease, box-shadow 0.1s ease;
 }
-
 button:hover {
   transform: scale(1.02);
   box-shadow: 0 4px 12px rgba(0,0,0,0.15);
 }
-
 #message { margin-top: 1rem; font-weight: 500; }
 .success { color: #2e7d32; }
 .error { color: #b71c1c; }
-
-/* Date + Heure côte à côte */
 .datetime-group { display: flex; flex-direction: column; margin-top: 1rem; }
 .datetime-fields { display: flex; gap: 0.5rem; flex-wrap: wrap; }
 .datetime-fields input, .datetime-fields select { flex: 1; }
 .datetime-fields input { border-radius: 12px 0 0 12px; border-right: none; }
 .datetime-fields select { border-radius: 0 12px 12px 0; }
-
-/* Popup */
 .popup {
   position: fixed;
-  top: 0; left: 0; right: 0; bottom: 0;
+  top:0; left:0; right:0; bottom:0;
   background: rgba(0,0,0,0.4);
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  z-index: 9999;
+  display:flex;
+  justify-content:center;
+  align-items:center;
+  z-index:9999;
 }
 .popup-content {
-  background: #fff;
-  padding: 1.8rem 2rem;
-  border-radius: 12px;
-  max-width: 400px;
-  text-align: left;
+  background:#fff;
+  padding:1.8rem 2rem;
+  border-radius:12px;
+  max-width:400px;
+  text-align:left;
 }
 .popup-content button {
-  margin-top: 1rem;
-  width: auto;
+  margin-top:1rem;
+  width:auto;
 }
 </style>
 </head>
@@ -150,9 +133,7 @@ button:hover {
     <span class="subtitle-script">Pension canine familiale - Cheillé</span>
     <span class="subtitle-script">Demande de réservation</span>
   </h1>
-
   <div id="encartFermeture"></div>
-
   <form id="reservationForm">
     <label>Nom et prénom du propriétaire</label>
     <input type="text" name="nom_proprietaire" required />
@@ -183,7 +164,6 @@ button:hover {
 
     <button type="submit">Envoyer la réservation</button>
   </form>
-
   <div id="message"></div>
 </div>
 
@@ -192,10 +172,8 @@ const SUPABASE_URL = 'https://usatdvopaaxrxjiqhgju.supabase.co';
 const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InVzYXRkdm9wYWF4cnhqaXFoIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTk1MjUzNDUsImV4cCI6MjA3NTEwMTM0NX0.D52GPw5yZUJWN1oZD_sop7F7nU9WZLM5OMof1TI3IMc';
 const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-// --- EmailJS ---
 emailjs.init("t6YY80T3DDql9uy32");
 
-// --- Encarts fermetures ---
 const encartFermeture = document.getElementById("encartFermeture");
 const periodesFermees = [
   { debut: "2025-12-20", fin: "2025-12-26" },
@@ -206,20 +184,26 @@ const periodesFermees = [
   { debut: "2026-10-16", fin: "2026-10-24" },
   { debut: "2026-12-19", fin: "2026-12-27" }
 ];
+
 function afficherEncartFermeture(){
   let contenu = "<strong>Périodes de fermeture 2025/2026:</strong><br>";
+  let lastYear = null;
   periodesFermees.forEach(p => {
     const debut = new Date(p.debut);
     const fin = new Date(p.fin);
-    const debutTxt = debut.toLocaleDateString("fr-FR"); // jj/mm/yyyy
-    const finTxt = fin.toLocaleDateString("fr-FR");     // jj/mm/yyyy
+    const debutTxt = debut.toLocaleDateString("fr-FR");
+    const finTxt = fin.toLocaleDateString("fr-FR");
+    if(lastYear !== null && debut.getFullYear() !== lastYear){
+      contenu += "<br>";
+    }
     contenu += `• du ${debutTxt} au ${finTxt}<br>`;
+    lastYear = debut.getFullYear();
   });
   encartFermeture.innerHTML = contenu;
 }
 afficherEncartFermeture();
 
-// --- Gestion Noms des chiens ---
+// Noms chiens dynamiques
 const nbChienInput = document.querySelector('input[name="nb_chien"]');
 const nomsChiensContainer = document.getElementById("nomsChiensContainer");
 function updateNomsChiens(){
@@ -241,7 +225,7 @@ function updateNomsChiens(){
 nbChienInput.addEventListener("input", updateNomsChiens);
 updateNomsChiens();
 
-// --- Date / Heure ---
+// Dates et heures
 const dateArriveeInput = document.getElementById("dateArrivee");
 const dateDepartInput = document.getElementById("dateDepart");
 const heureArriveeSelect = document.getElementById("heureArrivee");
@@ -253,6 +237,34 @@ dateArriveeInput.value = todayStr;
 dateDepartInput.value = todayStr;
 dateArriveeInput.min = todayStr;
 dateDepartInput.min = todayStr;
+
+// --- Heures ---
+function generateTimeOptions(){
+  const times = [];
+  for(let h=9; h<=18; h++){
+    const hh = h.toString().padStart(2,'0');
+    times.push(`${hh}:00`);
+  }
+  return times;
+}
+function updateHourOptions(selectInput){
+  const times = generateTimeOptions();
+  selectInput.innerHTML = "";
+  times.forEach(t=>{
+    const opt=document.createElement("option");
+    opt.value = t;
+    opt.textContent = t.replace(":", "h");
+    selectInput.appendChild(opt);
+  });
+}
+updateHourOptions(heureArriveeSelect);
+updateHourOptions(heureDepartSelect);
+
+dateArriveeInput.addEventListener("change", ()=>{
+  if(dateDepartInput.value < dateArriveeInput.value){
+    dateDepartInput.value = dateArriveeInput.value;
+  }
+});
 
 // --- Popup ---
 function formatDateFrancais(dateStr, heureStr){
@@ -277,7 +289,7 @@ function showPopup(message){
   document.getElementById("closePopup").addEventListener("click",()=>popup.remove());
 }
 
-// --- Formulaire ---
+// --- Soumission ---
 const form = document.getElementById("reservationForm");
 form.addEventListener("submit", async e=>{
   e.preventDefault();
@@ -299,19 +311,13 @@ form.addEventListener("submit", async e=>{
   }
   reservation.nom_chien = reservation.nom_chien.join(",");
 
-  // --- Enregistrement Supabase ---
+  // Supabase
   try {
     const { error } = await supabaseClient.from("reservations").insert([reservation]);
-    if(error){
-      alert("Erreur lors de l'enregistrement dans la base de données: " + error.message);
-      return;
-    }
-  } catch(err){
-    alert("Erreur lors de l'enregistrement dans la base de données: " + (err.message||err));
-    return;
-  }
+    if(error){ alert("Erreur en base : " + error.message); return; }
+  } catch(err){ alert("Erreur en base : "+(err.message||err)); return; }
 
-  // --- Message popup et email ---
+  // Message
   const message = `Votre réservation a été enregistrée avec succès<br>
   <div style="margin-left:20px;">
     du ${formatDateFrancais(reservation.date_arrivee,reservation.heure_arrivee)}<br>
@@ -321,7 +327,7 @@ form.addEventListener("submit", async e=>{
 
   showPopup(message);
 
-  // --- Envoi email ---
+  // EmailJS
   const emailParams = {
     from_name: "Isabelle - Pension À l'Orée de la Forêt",
     from_email: "a.l.oree.de.la.foret.37@gmail.com",
@@ -332,11 +338,9 @@ form.addEventListener("submit", async e=>{
   };
   try {
     await emailjs.send("service_22ypgkl","template_i2nke5k",emailParams);
-  } catch(err){
-    console.error("Erreur EmailJS :", err);
-  }
+  } catch(err){ console.error("Erreur EmailJS :", err); }
 
-  // --- Reset form ---
+  // Reset
   form.reset();
   dateArriveeInput.value = todayStr;
   dateDepartInput.value = todayStr;
@@ -345,8 +349,3 @@ form.addEventListener("submit", async e=>{
 </script>
 </body>
 </html>
-
-
-
-
-
