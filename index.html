@@ -40,13 +40,13 @@ body {
 }
 h1 {
   color: var(--brun-texte);
-  font-size: 1.6rem;
+  font-size: 1.5rem;
   margin-bottom: 1rem;
   line-height: 1.3;
 }
 .subtitle-script {
   display: block;
-  font-size: 1rem;
+  font-size: 0.95rem;
   color: var(--brun-texte);
   margin-top: 0.3rem;
 }
@@ -56,7 +56,7 @@ h1 {
   padding: 1rem;
   text-align: left;
   margin-bottom: 1.5rem;
-  font-size: 0.85rem;
+  font-size: 0.75rem;
   color: var(--brun-texte);
   background: #fff;
 }
@@ -185,22 +185,39 @@ const periodesFermees = [
   { debut: "2026-12-19", fin: "2026-12-27" }
 ];
 
-function afficherEncartFermeture(){
-  let contenu = "<strong>Périodes de fermeture 2025/2026:</strong><br>";
-  let lastYear = null;
+function afficherEncartFermeture() {
+  let contenu = "";
+  let periodesParAn = {};
+
+  // Regrouper les périodes par année
   periodesFermees.forEach(p => {
     const debut = new Date(p.debut);
     const fin = new Date(p.fin);
-    const debutTxt = debut.toLocaleDateString("fr-FR");
-    const finTxt = fin.toLocaleDateString("fr-FR");
-    if(lastYear !== null && debut.getFullYear() !== lastYear){
-      contenu += "<br>";
-    }
-    contenu += `• du ${debutTxt} au ${finTxt}<br>`;
-    lastYear = debut.getFullYear();
+    const annee = debut.getFullYear();
+
+    if (!periodesParAn[annee]) periodesParAn[annee] = [];
+    periodesParAn[annee].push({ debut, fin });
   });
+
+  // Pour chaque année
+  Object.keys(periodesParAn).sort().forEach(annee => {
+    contenu += `<strong>Fermetures ${annee} :</strong><br><br>`;
+    periodesParAn[annee].forEach(p => {
+      const options = { day: "numeric", month: "long" };
+      let debutTxt = p.debut.toLocaleDateString("fr-FR", options);
+      let finTxt = p.fin.toLocaleDateString("fr-FR", options);
+
+      // Remplacer "1" par "1er"
+      debutTxt = debutTxt.replace(/^1 /, "1er ");
+      finTxt = finTxt.replace(/^1 /, "1er ");
+
+      contenu += `Du ${debutTxt} au ${finTxt}<br><br>`;
+    });
+  });
+
   encartFermeture.innerHTML = contenu;
 }
+
 afficherEncartFermeture();
 
 // Noms chiens dynamiques
@@ -349,3 +366,4 @@ form.addEventListener("submit", async e=>{
 </script>
 </body>
 </html>
+
