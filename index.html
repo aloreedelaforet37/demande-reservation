@@ -367,7 +367,7 @@ form.addEventListener("submit", async e=>{
     to_name: reservation.nom_proprietaire,
     to_email: reservation.email,
     subject: "Votre réservation a bien été enregistrée",
-    html: message
+    message: message
   };
   try {
     await emailjs.send("service_22ypgkl","template_i2nke5k",emailParams);
@@ -382,6 +382,7 @@ form.addEventListener("submit", async e=>{
 </script>
 </body>
 </html>
+
 
 
 
