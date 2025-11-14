@@ -38,6 +38,18 @@ body {
   height: auto;
   margin-bottom: 1rem;
 }
+.header-images {
+  display: flex;
+  align-items: center;   /* aligne verticalement les images */
+  gap: 20px;             /* espace entre les images */
+  justify-content: center; /* centrer horizontalement si nécessaire */
+}
+
+.header-images img {
+  max-height: 80px;      /* ajuste la hauteur si besoin */
+  height: auto;
+}
+
 h1 {
   color: var(--brun-texte);
   font-size: 1.5rem;
@@ -127,7 +139,11 @@ button:hover {
 
 <body>
 <div class="form-container">
-    <img src="logo.png" alt="Logo À l'Orée de la Forêt" />
+    <div class="header-images">
+      <img src="logo.png" alt="Logo À l'Orée de la Forêt" class="logo" />
+      <img src="reservationVacances.jpg" alt="Reservation de mes vacances" class="second-image" />
+    </div>
+
   <h1>
     À l’Orée de la Forêt<br>
     <span class="subtitle-script">Pension canine familiale - Cheillé</span>
@@ -366,6 +382,7 @@ form.addEventListener("submit", async e=>{
 </script>
 </body>
 </html>
+
 
 
 
