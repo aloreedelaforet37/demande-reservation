@@ -351,14 +351,20 @@ form.addEventListener("submit", async e=>{
   } catch(err){ alert("Erreur en base : "+(err.message||err)); return; }
 
   // Message
-  const message = `Votre réservation a été enregistrée avec succès<br>
+  const messageHtml = `Votre réservation a été enregistrée avec succès<br>
   <div style="margin-left:20px;">
     du ${formatDateFrancais(reservation.date_arrivee,reservation.heure_arrivee)}<br>
     au ${formatDateFrancais(reservation.date_depart,reservation.heure_depart)}
   </div><br>
   Nous vous tiendrons informé(e) dès que possible de la disponibilité.`;
 
-  showPopup(message);
+
+  const message = `Votre réservation a été enregistrée avec succès\n
+    du ${formatDateFrancais(reservation.date_arrivee,reservation.heure_arrivee)}\n
+    au ${formatDateFrancais(reservation.date_depart,reservation.heure_depart)}\n\n
+  Nous vous tiendrons informé(e) dès que possible de la disponibilité.`;
+
+  showPopup(messageHtml);
 
   // EmailJS
   const emailParams = {
@@ -382,6 +388,7 @@ form.addEventListener("submit", async e=>{
 </script>
 </body>
 </html>
+
 
 
 
