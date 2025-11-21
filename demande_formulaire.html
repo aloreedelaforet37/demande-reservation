@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Demande Formulaire - À l'Orée de la Forêt</title>
+
+<link href="https://fonts.googleapis.com/css2?family=Pacifico&family=Roboto:wght@300;400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+<div class="form-container">
+  <img src="logoCarre.png" alt="Logo À l'Orée de la Forêt" class="logo" />
+
+  <h1>
+    À l’Orée de la Forêt<br>
+    <span class="subtitle-script">Pension canine familiale - Cheillé</span>
+    <span class="subtitle-script">Demande de formulaire</span>
+  </h1>
+
+  <form id="animalForm">
+    <label>Prénom et nom du propriétaire</label>
+    <input type="text" id="proprietaire" name="proprietaire" required />
+
+    <label>Email</label>
+    <input type="email" id="email" name="email" required />
+
+    <label>Nom de votre compagnon</label>
+    <input type="text" id="nom_animal" name="nom_animal" required />
+
+    <button type="submit">Envoyer la demande</button>
+  </form>
+</div>
+
+<!-- Chargement Supabase et EmailJS AVANT script.js -->
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js"></script>
+<script src="https://cdn.jsdelivr.net/npm/emailjs-com@3/dist/email.min.js"></script>
+<script src="script.js"></script>
+
+<style>
+/* Styles popup animée */
+.popup {
+  position: fixed;
+  top:0; left:0; right:0; bottom:0;
+  background: rgba(0,0,0,0.4);
+  display:flex;
+  justify-content:center;
+  align-items:center;
+  z-index:9999;
+  opacity:0;
+  animation: fadeIn 0.3s forwards;
+}
+@keyframes fadeIn { to { opacity: 1; } }
+.popup-content {
+  background:#fff;
+  padding:1.8rem 2rem;
+  border-radius:12px;
+  max-width:400px;
+  text-align:left;
+  transform: translateY(-20px);
+  animation: slideDown 0.3s forwards;
+}
+@keyframes slideDown { to { transform: translateY(0); } }
+.popup-content button {
+  background: linear-gradient(135deg, var(--vert-clair), var(--vert-fonce));
+  color: white;
+  border: none;
+  padding: 0.8rem 1rem;
+  border-radius: 14px;
+  font-size: 1.1rem;
+  font-weight: bold;
+  cursor: pointer;
+  margin-top: 1rem;
+  transition: transform 0.1s ease, box-shadow 0.1s ease;
+}
+.popup-content button:hover {
+  transform: scale(1.02);
+  box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+}
+</style>
+
+</body>
+</html>
