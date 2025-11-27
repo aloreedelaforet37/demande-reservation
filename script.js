@@ -34,9 +34,9 @@ window.addEventListener('DOMContentLoaded', () => {
   ];
 
   if (encartFermeture) {
-    let contenu = "";
+    let contenu = `<strong>Périodes de fermeture :</strong><br>`; // titre en gras
     periodesFermees.forEach(p => {
-      const options = { day:"numeric", month:"long" };
+      const options = { day: "numeric", month: "long", year: "numeric" };
       let debut = new Date(p.debut).toLocaleDateString("fr-FR", options).replace(/^1 /,"1er ");
       let fin = new Date(p.fin).toLocaleDateString("fr-FR", options).replace(/^1 /,"1er ");
       contenu += `Du ${debut} au ${fin}<br>`;
