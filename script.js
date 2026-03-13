@@ -174,17 +174,42 @@ window.addEventListener('DOMContentLoaded', () => {
     updateNomChiens();
     nbChienInput.addEventListener("change", updateNomChiens);
 
-    const horaires = {
-      lundi: ["09:00","14:00","17:00","18:45"],  // Heure d'hiver lundi: ["09:00","14:00","16:00","17:00"],
-      mardi: ["09:00","14:00","17:00","18:45"], // Heure d'hiver mardi: ["09:00","14:00","16:00","17:00"],
-      mercredi: ["09:00","14:00","17:00","18:45"],
-      jeudi: ["09:00","14:00","17:00","18:45"],
-      vendredi: ["09:00","14:00","17:00","18:45"],
-      samedi: ["10:00","12:00","17:00","18:00"],
-      dimanche_arrivee: ["17:00","18:00"],
-      dimanche_depart: ["11:00","12:00","17:00","18:00"]
+    const horairesEte = {
+      lundi: [["09:00","14:00"],["17:00","18:45"]],
+      mardi: [["09:00","14:00"],["17:00","18:45"]],
+      mercredi: [["09:00","14:00"],["17:00","18:45"]],
+      jeudi: [["09:00","14:00"],["17:00","18:45"]],
+      vendredi: [["09:00","14:00"],["17:00","18:45"]],
+      samedi: [["10:00","12:00"],["17:00","18:00"]],
+      dimanche_arrivee: [["17:00","18:00"]],
+      dimanche_depart: [["11:00","12:00"],["17:00","18:00"]]
+    };
+    
+    const horairesHiver = {
+      lundi: [["09:00","14:00"],["16:00","17:00"]],
+      mardi: [["09:00","14:00"],["16:00","17:00"]],
+      mercredi: [["09:00","14:00"],["17:00","18:45"]],
+      jeudi: [["09:00","14:00"],["17:00","18:45"]],
+      vendredi: [["09:00","14:00"],["17:00","18:45"]],
+      samedi: [["10:00","12:00"],["17:00","18:00"]],
+      dimanche_arrivee: [["17:00","18:00"]],
+      dimanche_depart: [["11:00","12:00"],["17:00","18:00"]]
     };
 
+function isHeureEte(dateStr) {
+
+  const date = new Date(dateStr);
+  const year = date.getFullYear();
+
+  const fevrier = new Date(year, 1, 28);
+  const octobre = new Date(year, 9, 31);
+
+  const dernierDimancheFevrier = new Date(fevrier.setDate(28 - fevrier.getDay()));
+  const dernierDimancheOctobre = new Date(octobre.setDate(31 - octobre.getDay()));
+
+  return date >= dernierDimancheFevrier && date < dernierDimancheOctobre;
+}
+    
     function fillHours(selectElem, plages) {
 
       const oldValue = selectElem.value;
@@ -229,11 +254,12 @@ window.addEventListener('DOMContentLoaded', () => {
       }
 
       const jour = new Date(dateArrivee.value).toLocaleDateString("fr-FR",{weekday:"long"});
-
-      if (jour === "dimanche")
-        fillHours(heureArrivee,[horaires.dimanche_arrivee]);
-      else
-        fillHours(heureArrivee,[horaires[jour]]);
+      const horaires = isHeureEte(dateArrivee.value) ? horairesEte : horairesHiver;
+      if (jour === "dimanche") {
+        fillHours(heureArrivee,horaires.dimanche_arrivee);
+      } else {
+        fillHours(heureArrivee, horaires[jour]);
+      }
     }
 
     function updateHorairesDepart() {
@@ -249,11 +275,12 @@ window.addEventListener('DOMContentLoaded', () => {
       }
 
       const jour = new Date(dateDepart.value).toLocaleDateString("fr-FR",{weekday:"long"});
-
-      if (jour === "dimanche")
-        fillHours(heureDepart,[horaires.dimanche_depart]);
-      else
-        fillHours(heureDepart,[horaires[jour]]);
+      const horaires = isHeureEte(dateDepart.value) ? horairesEte : horairesHiver;
+      if (jour === "dimanche") {
+        fillHours(heureDepart,horaires.dimanche_depart);
+      } else {
+        fillHours(heureDepart, horaires[jour]);
+      }
     }
 
     const todayStr = new Date().toISOString().split("T")[0];
@@ -281,6 +308,7 @@ window.addEventListener('DOMContentLoaded', () => {
       }
 
       updateHorairesArrivee();
+      updateHorairesDepart();
     });
 
     dateDepart.addEventListener("change", () => {
