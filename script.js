@@ -96,6 +96,11 @@ window.addEventListener('DOMContentLoaded', () => {
   function formatLocalDate(d) {
     return d.toISOString().split("T")[0];
   }
+  // formate la date eu format "13 mars 2026"
+  function formatDateFR(dateStr) {
+    const options = { day: "numeric", month: "long", year: "numeric" };
+    return new Date(dateStr).toLocaleDateString("fr-FR", options);
+  }
 
   function getJoursFeries(year) {
 
@@ -326,6 +331,80 @@ function isHeureEte(dateStr) {
       updateHorairesDepart();
     });
 
+      // --- Submit réservation ---
+    formReservation.addEventListener("submit", async e => {
+      e.preventDefault();
+      const formData = new FormData(formReservation);
+      const reservation = {
+        nom_proprietaire: formData.get("nom_proprietaire"),
+        email: formData.get("email"),
+        nb_chien: parseInt(formData.get("nb_chien")) || 1,
+        nom_chien: [],
+        date_arrivee: formData.get("date_arrivee"),
+        heure_arrivee: formData.get("heure_arrivee"),
+        date_depart: formData.get("date_depart"),
+        heure_depart: formData.get("heure_depart"),
+        remarque: formData.get("remarque")
+      };
+      for (let i = 1; i <= reservation.nb_chien; i++) reservation.nom_chien.push(formData.get(`nom_chien_input_${i}`));
+
+      // Format nom chien
+      if (reservation.nom_chien.length === 1) reservation.nom_chien = reservation.nom_chien[0];
+      else if (reservation.nom_chien.length === 2) reservation.nom_chien = reservation.nom_chien.join(" et ");
+      else {
+        const last = reservation.nom_chien.pop();
+        reservation.nom_chien = reservation.nom_chien.join(", ") + " et " + last;
+      }
+
+      try {
+        const { error } = await supabaseClient.from("reservations").insert([reservation]);
+        if (error) throw error;
+
+        const emailAloree = "a.l.oree.de.la.foret.37@gmail.com";
+        // Envoi email au client et à moi
+        await Promise.all([
+          // Envoi au client
+          emailjs.send(
+          "service_22ypgkl","template_i2nke5k",
+            {
+                to_email: reservation.email,
+                from_name: "Isabelle - Pension À l'Orée de la Forêt",
+                from_email: emailAloree,
+                subject: "Votre réservation pour " + reservation.nom_chien +" a bien été enregistrée",
+                nomChiens: reservation.nom_chien,
+                date_arrivee: `Du ${formatDateFR(reservation.date_arrivee)} à ${reservation.heure_arrivee.replace(":", "h")}`,
+                date_depart: `Au ${formatDateFR(reservation.date_depart)} à ${reservation.heure_depart.replace(":", "h")}`
+            }
+          ),
+          // Envoi à moi
+          emailjs.send(
+            "service_22ypgkl","template_i2nke5k",
+            {
+                to_email: emailAloree,
+                from_name: reservation.nom_proprietaire,
+                from_email: emailAloree,
+                subject: "Nouvelle réservation pour " + reservation.nom_chien,
+                nomChiens: reservation.nom_chien,
+                date_arrivee: `Du ${formatDateFR(reservation.date_arrivee)} à ${reservation.heure_arrivee.replace(":", "h")}`,
+                date_depart: `Au ${formatDateFR(reservation.date_depart)} à ${reservation.heure_depart.replace(":", "h")}`
+            }
+          )
+        ]);
+
+        showPopup("Votre réservation a été enregistrée !");
+        formReservation.reset();
+        const todayStr = new Date().toISOString().split("T")[0];
+        dateArrivee.value = todayStr;
+        dateDepart.value = todayStr;
+        updateNomChiens();
+        updateHorairesArrivee();
+        updateHorairesDepart();
+
+      } catch(err) {
+        showPopup("Erreur en base : " + (err.message || err));
+      }
+    });
+    
   }
 
 });
