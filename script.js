@@ -9,17 +9,20 @@ window.addEventListener('DOMContentLoaded', () => {
   // --- EmailJS ---
   if (typeof emailjs !== "undefined") emailjs.init("t6YY80T3DDql9uy32");
 
+  const todayStr = new Date().toISOString().split("T")[0];
+
   // --- Popup ---
   function showPopup(message) {
     const popup = document.createElement('div');
     popup.className = 'popup';
     popup.innerHTML = `
       <div class="popup-content">
+        <strong>Information</strong><br><br>
         ${message}
-        <button id="closePopup">OK</button>
+        <button class="closePopup">OK</button>
       </div>`;
     document.body.appendChild(popup);
-    document.getElementById('closePopup').addEventListener('click', () => popup.remove());
+    popup.querySelector('.closePopup').addEventListener('click', () => popup.remove());
   }
 
   // --- Périodes de fermeture ---
@@ -29,6 +32,14 @@ window.addEventListener('DOMContentLoaded', () => {
     { debut: "2026-07-03", fin: "2026-07-23" },
     { debut: "2026-10-16", fin: "2026-10-24" },
     { debut: "2026-12-19", fin: "2026-12-27" }
+  ];
+
+  const datesCompletes = [
+    { debut: "2026-04-12", fin: "2026-04-18" },
+    { debut: "2026-05-08", fin: "2026-05-10" },
+    { debut: "2026-05-13", fin: "2026-05-18" },
+    { debut: "2026-07-25", fin: "2026-08-24" }
+    
   ];
 
   const encartFermeture = document.getElementById("encartFermeture");
@@ -57,45 +68,57 @@ window.addEventListener('DOMContentLoaded', () => {
     });
   }
 
-  function crossesClosure(dateA, dateD) {
-    const dA = new Date(dateA);
-    const dD = new Date(dateD);
-    return periodesFermees.some(p => {
-      const f1 = new Date(p.debut);
-      const f2 = new Date(p.fin);
-      return dA < f1 && dD > f2;
+  function isComplet(dateStr) {
+    const date = new Date(dateStr);
+    return datesCompletes.some(p => {
+      const d1 = new Date(p.debut);
+      const d2 = new Date(p.fin);
+      return date >= d1 && date <= d2;
     });
-  }
+}
 
-  function checkClosed(dateInput) {
-    if (isClosed(dateInput.value)) {
-      alert("La pension est fermée à cette date. Merci d'en choisir une autre.");
-      dateInput.value = "";
-    }
-  }
+function crossesClosure(dateA, dateD) {
+  const dA = new Date(dateA);
+  const dD = new Date(dateD);
+
+  // Vérif périodes de fermeture
+  const traversePeriode = periodesFermees.some(p => {
+    const f1 = new Date(p.debut);
+    const f2 = new Date(p.fin);
+    return dA < f1 && dD > f2;
+  });
+
+  // Vérif périodes complètes
+  const contientDateComplete = datesCompletes.some(p => {
+    const d1 = new Date(p.debut);
+    const d2 = new Date(p.fin);
+    return dA <= d2 && dD >= d1;
+  });
+
+  return traversePeriode || contientDateComplete;
+}
 
   // --- Jours fériés ---
-  function getEasterDate(year) {
-    const a = year % 19;
-    const b = Math.floor(year / 100);
-    const c = year % 100;
-    const d = Math.floor(b / 4);
-    const e = b % 4;
-    const f = Math.floor((b + 8) / 25);
-    const g = Math.floor((b - f + 1) / 3);
-    const h = (19*a + b - d - g + 15) % 30;
-    const i = Math.floor(c / 4);
-    const k = c % 4;
-    const l = (32 + 2*e + 2*i - h - k) % 7;
-    const m = Math.floor((a + 11*h + 22*l) / 451);
-    const month = Math.floor((h + l - 7*m + 114) / 31);
-    const day = ((h + l - 7*m + 114) % 31) + 1;
-    return new Date(year, month - 1, day);
-  }
+function getEasterDate(year) {
+  const f = Math.floor,
+    G = year % 19,
+    C = f(year / 100),
+    H = (C - f(C / 4) - f((8 * C + 13) / 25) + 19 * G + 15) % 30,
+    I = H - f(H / 28) * (1 - f(29 / (H + 1)) * f((21 - G) / 11)),
+    J = (year + f(year / 4) + I + 2 - C + f(C / 4)) % 7,
+    L = I - J,
+    month = 3 + f((L + 40) / 44),
+    day = L + 28 - 31 * f(month / 4);
+  return new Date(year, month - 1, day);
+}
 
-  function formatLocalDate(d) {
-    return d.toISOString().split("T")[0];
-  }
+function formatLocalDate(d) {
+  const year = d.getFullYear();
+  const month = String(d.getMonth() + 1).padStart(2, "0");
+  const day = String(d.getDate()).padStart(2, "0");
+  return `${year}-${month}-${day}`;
+}
+  
   // formate la date eu format "13 mars 2026"
   function formatDateFR(dateStr) {
     const options = { day: "numeric", month: "long", year: "numeric" };
@@ -288,8 +311,6 @@ function isHeureEte(dateStr) {
       }
     }
 
-    const todayStr = new Date().toISOString().split("T")[0];
-
     dateArrivee.value = todayStr;
     dateDepart.value = todayStr;
     dateArrivee.min = todayStr;
@@ -298,113 +319,191 @@ function isHeureEte(dateStr) {
     updateHorairesArrivee();
     updateHorairesDepart();
 
-    dateArrivee.addEventListener("change", () => {
+dateArrivee.addEventListener("change", () => {
+  dateArrivee.style.color = "";
+  dateDepart.min = dateArrivee.value;
+  if (!dateDepart.value || dateDepart.value < dateArrivee.value)
+    dateDepart.value = dateArrivee.value;
+  updateHorairesArrivee();
+  updateHorairesDepart();
+});
 
-      checkClosed(dateArrivee);
-
-      dateDepart.min = dateArrivee.value;
-
-      if (dateDepart.value < dateArrivee.value)
-        dateDepart.value = dateArrivee.value;
-
-      if (crossesClosure(dateArrivee.value,dateDepart.value)) {
-        alert("Votre séjour ne peut pas traverser une période de fermeture.");
-        dateArrivee.value = "";
-      }
-
-      updateHorairesArrivee();
-      updateHorairesDepart();
-    });
-
-    dateDepart.addEventListener("change", () => {
-
-      checkClosed(dateDepart);
-
-      if (dateDepart.value < dateArrivee.value)
-        dateDepart.value = dateArrivee.value;
-
-      if (crossesClosure(dateArrivee.value,dateDepart.value)) {
-        alert("Votre séjour ne peut pas traverser une période de fermeture.");
-        dateDepart.value = "";
-      }
-
-      updateHorairesDepart();
-    });
-
-      // --- Submit réservation ---
-    formReservation.addEventListener("submit", async e => {
-      e.preventDefault();
-      const formData = new FormData(formReservation);
-      const reservation = {
-        nom_proprietaire: formData.get("nom_proprietaire"),
-        email: formData.get("email"),
-        nb_chien: parseInt(formData.get("nb_chien")) || 1,
-        nom_chien: [],
-        date_arrivee: formData.get("date_arrivee"),
-        heure_arrivee: formData.get("heure_arrivee"),
-        date_depart: formData.get("date_depart"),
-        heure_depart: formData.get("heure_depart"),
-        remarque: formData.get("remarque")
-      };
-      for (let i = 1; i <= reservation.nb_chien; i++) reservation.nom_chien.push(formData.get(`nom_chien_input_${i}`));
-
-      // Format nom chien
-      if (reservation.nom_chien.length === 1) reservation.nom_chien = reservation.nom_chien[0];
-      else if (reservation.nom_chien.length === 2) reservation.nom_chien = reservation.nom_chien.join(" et ");
-      else {
-        const last = reservation.nom_chien.pop();
-        reservation.nom_chien = reservation.nom_chien.join(", ") + " et " + last;
-      }
-
-      try {
-        const { error } = await supabaseClient.from("reservations").insert([reservation]);
-        if (error) throw error;
-
-        const emailAloree = "a.l.oree.de.la.foret.37@gmail.com";
-        // Envoi email au client et à moi
-        await Promise.all([
-          // Envoi au client
-          emailjs.send(
-          "service_22ypgkl","template_i2nke5k",
-            {
-                to_email: reservation.email,
-                from_name: "Isabelle - Pension À l'Orée de la Forêt",
-                from_email: emailAloree,
-                subject: "Votre réservation pour " + reservation.nom_chien +" a bien été enregistrée",
-                nomChiens: reservation.nom_chien,
-                date_arrivee: `Du ${formatDateFR(reservation.date_arrivee)} à ${reservation.heure_arrivee.replace(":", "h")}`,
-                date_depart: `Au ${formatDateFR(reservation.date_depart)} à ${reservation.heure_depart.replace(":", "h")}`
-            }
-          ),
-          // Envoi à moi
-          emailjs.send(
-            "service_22ypgkl","template_i2nke5k",
-            {
-                to_email: emailAloree,
-                from_name: reservation.nom_proprietaire,
-                from_email: emailAloree,
-                subject: "Nouvelle réservation pour " + reservation.nom_chien,
-                nomChiens: reservation.nom_chien,
-                date_arrivee: `Du ${formatDateFR(reservation.date_arrivee)} à ${reservation.heure_arrivee.replace(":", "h")}`,
-                date_depart: `Au ${formatDateFR(reservation.date_depart)} à ${reservation.heure_depart.replace(":", "h")}`
-            }
-          )
-        ]);
-
-        showPopup("Votre réservation a été enregistrée !");
-        formReservation.reset();
-        const todayStr = new Date().toISOString().split("T")[0];
-        dateArrivee.value = todayStr;
-        dateDepart.value = todayStr;
-        updateNomChiens();
-        updateHorairesArrivee();
-        updateHorairesDepart();
-
-      } catch(err) {
-        showPopup("Erreur en base : " + (err.message || err));
-      }
-    });
+dateDepart.addEventListener("change", () => {
+  dateDepart.style.color = "";
+  heureDepart.style.color = "";
+  if (dateDepart.value < dateArrivee.value)
+    dateDepart.value = dateArrivee.value;
+  updateHorairesDepart();
+});
     
+heureDepart.addEventListener("change", () => {
+  dateDepart.style.color = "";
+  heureDepart.style.color = "";
+});
+
+  
+// --- Submit réservation ---
+formReservation.addEventListener("submit", async e => {
+  e.preventDefault();
+
+  // Réinitialiser les couleurs
+  dateArrivee.style.color = "";
+  dateDepart.style.color = "";
+
+  let erreur = false;
+
+  // Contrôle des dates
+  if (isClosed(dateArrivee.value)) {
+    showPopup("La date d'arrivée est sur une période de fermeture, n'hésitez pas à réserver sur une autre période.");
+    dateArrivee.style.color = "red";
+    dateArrivee.focus();
+    erreur = true;
+  } else if (isComplet(dateArrivee.value)) {
+    showPopup("Nous sommes complets le jour de la date d'arrivée, n'hésitez pas à réserver sur une autre période ou à me contacter.");
+    dateArrivee.style.color = "red";
+    dateArrivee.focus();
+    erreur = true;
   }
 
-});
+  if (!erreur) {
+    if (isClosed(dateDepart.value)) {
+      showPopup("La date de départ est sur une période de fermeture, n'hésitez pas à réserver sur une autre période.");
+      dateDepart.style.color = "red";
+      dateDepart.focus();
+      erreur = true;
+    } else if (isComplet(dateDepart.value)) {
+      showPopup("Nous sommes complets le jour de la date de départ, n'hésitez pas à réserver sur une autre période ou à me contacter.");
+      dateDepart.style.color = "red";
+      dateDepart.focus();
+      erreur = true;
+    }
+  }
+
+  if (!erreur && crossesClosure(dateArrivee.value, dateDepart.value)) {
+    showPopup("Votre séjour ne peut pas traverser une période de fermeture ou de période complète.");
+    dateArrivee.style.color = "red";
+    dateDepart.style.color = "red";
+    dateArrivee.focus();
+    erreur = true;
+  }
+
+  const dateMax = new Date();
+  dateMax.setMonth(dateMax.getMonth() + 6);
+  const dateMaxStr = dateMax.toISOString().split("T")[0];
+
+  if (!erreur && dateArrivee.value > dateMaxStr) {
+    showPopup("La réservation n'est pas ouverte plus de 6 mois avant la date souhaitée.");
+    dateArrivee.style.color = "red";
+    dateArrivee.focus();
+    erreur = true;
+  }
+
+  if (!erreur && dateDepart.value > dateMaxStr) {
+    showPopup("La réservation n'est pas ouverte plus de 6 mois avant la date souhaitée.");
+    dateDepart.style.color = "red";
+    dateDepart.focus();
+    erreur = true;
+  }
+
+  if (!erreur && dateArrivee.value === dateDepart.value) {
+    if (heureDepart.value <= heureArrivee.value) {
+      showPopup("L'heure de départ doit être postérieure à l'heure d'arrivée.");
+      dateDepart.style.color = "red";
+      heureDepart.style.color = "red";
+      heureDepart.focus();
+      erreur = true;
+    }
+  }
+
+  if (erreur) return;
+
+  const formData = new FormData(formReservation);
+  const reservation = {
+    nom_proprietaire: formData.get("nom_proprietaire"),
+    email: formData.get("email"),
+    nb_chien: parseInt(formData.get("nb_chien")) || 1,
+    nom_chien: [],
+    date_arrivee: formData.get("date_arrivee"),
+    heure_arrivee: formData.get("heure_arrivee"),
+    date_depart: formData.get("date_depart"),
+    heure_depart: formData.get("heure_depart"),
+    remarque: formData.get("remarque")
+  };
+
+  for (let i = 1; i <= reservation.nb_chien; i++)
+    reservation.nom_chien.push(formData.get(`nom_chien_input_${i}`));
+
+  if (reservation.nom_chien.length === 1) reservation.nom_chien = reservation.nom_chien[0];
+  else if (reservation.nom_chien.length === 2) reservation.nom_chien = reservation.nom_chien.join(" et ");
+  else {
+    const last = reservation.nom_chien.pop();
+    reservation.nom_chien = reservation.nom_chien.join(", ") + " et " + last;
+  }
+
+  try {
+    const { error } = await supabaseClient.from("reservations").insert([reservation]);
+    if (error) throw error;
+
+    const emailAloree = "a.l.oree.de.la.foret.37@gmail.com";
+    await Promise.all([
+      // Email pour le client
+      emailjs.send("service_22ypgkl", "template_i2nke5k", {
+        to_email: reservation.email,
+        from_name: "Isabelle - Pension À l'Orée de la Forêt",
+        from_email: emailAloree,
+        subject: "Votre réservation pour " + reservation.nom_chien + " a bien été enregistrée",
+        nomChiens: reservation.nom_chien,
+        date_arrivee: `Du ${formatDateFR(reservation.date_arrivee)} à ${reservation.heure_arrivee.replace(":", "h")}`,
+        date_depart: `Au ${formatDateFR(reservation.date_depart)} à ${reservation.heure_depart.replace(":", "h")}`
+      }),
+      // Email pour moi
+      emailjs.send("service_22ypgkl", "template_r0e2mju", {
+        to_email: emailAloree,
+        from_name: reservation.nom_proprietaire,
+        from_email: emailAloree,
+        subject: "Nouvelle réservation pour " + reservation.nom_chien,
+        nomChiens: reservation.nom_chien,
+        date_arrivee: `Du ${formatDateFR(reservation.date_arrivee)} à ${reservation.heure_arrivee.replace(":", "h")}`,
+        date_depart: `Au ${formatDateFR(reservation.date_depart)} à ${reservation.heure_depart.replace(":", "h")}`,
+        remarque: reservation.remarque
+      })
+    ]);
+
+    // Envoi WhatsApp (séparé, ne bloque pas en cas d'échec)
+    const texte = encodeURIComponent(
+      `🐶 Nouvelle réservation pour ${reservation.nom_chien}\n` +
+      `👤 Propriétaire : ${reservation.nom_proprietaire}\n` +
+      `📧 Email : ${reservation.email}\n` +
+      `📅 Arrivée : ${formatDateFR(reservation.date_arrivee)} à ${reservation.heure_arrivee.replace(":", "h")}\n` +
+      `📅 Départ : ${formatDateFR(reservation.date_depart)} à ${reservation.heure_depart.replace(":", "h")}\n` +
+      `📝 Remarque : ${reservation.remarque}`
+    );
+    try {
+      await fetch(`https://api.callmebot.com/whatsapp.php?phone=33627363788&text=${texte}&apikey=1089744`, { mode: "no-cors" });
+    } catch(e) {
+      console.log("WhatsApp non envoyé :", e);
+    }
+
+    showPopup(`Votre réservation a bien été enregistrée.<br><br>
+      Arrivée : <strong>${formatDateFR(reservation.date_arrivee)} à ${reservation.heure_arrivee.replace(":", "h")}</strong><br>
+      Départ : <strong>${formatDateFR(reservation.date_depart)} à ${reservation.heure_depart.replace(":", "h")}</strong>`);
+
+    formReservation.reset();
+    dateArrivee.value = todayStr;
+    dateDepart.value = todayStr;
+    updateNomChiens();
+    updateHorairesArrivee();
+    updateHorairesDepart();
+
+  } catch(err) {
+    console.log("Erreur complète :", err);
+    const message = err?.message
+      || err?.error_description
+      || err?.details
+      || err?.hint
+      || JSON.stringify(err);
+    showPopup("Erreur : " + message);
+  }
+});   // fin du addEventListener submit
+}     // fin du if (formReservation)
+});  // fin du DOMContentLoaded
