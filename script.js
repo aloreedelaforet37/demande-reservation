@@ -4,7 +4,12 @@ window.addEventListener('DOMContentLoaded', () => {
   // --- Supabase ---
   const SUPABASE_URL = 'https://usatdvopaaxrxjiqhgju.supabase.co';
   const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InVzYXRkdm9wYWF4cnhqaXFoZ2p1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTk1MjUzNDUsImV4cCI6MjA3NTEwMTM0NX0.D52GPw5yZUJWN1oZD_sop7F7nU9WZLM5OMof1TI3IMc';
-  const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+  const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
+  auth: {
+    persistSession: false,
+    autoRefreshToken: false
+  }
+});
 
   // --- EmailJS ---
   if (typeof emailjs !== "undefined") emailjs.init("t6YY80T3DDql9uy32");
@@ -25,6 +30,25 @@ window.addEventListener('DOMContentLoaded', () => {
     popup.querySelector('.closePopup').addEventListener('click', () => popup.remove());
   }
 
+  // Affiche le message d'attente
+  function showWaiting() {
+  const waiting = document.createElement('div');
+  waiting.id = 'waitingPopup';
+  waiting.className = 'popup';
+  waiting.innerHTML = `
+    <div class="popup-content">
+      <strong>Enregistrement en cours...</strong><br><br>
+      Merci de patienter 🐾
+    </div>`;
+  document.body.appendChild(waiting);
+}
+
+  // Cache le message d'attente
+function hideWaiting() {
+  const waiting = document.getElementById('waitingPopup');
+  if (waiting) waiting.remove();
+}
+
   // --- Périodes de fermeture ---
   const periodesFermees = [
     { debut: "2026-04-19", fin: "2026-04-26" },
@@ -40,7 +64,6 @@ window.addEventListener('DOMContentLoaded', () => {
     { debut: "2026-05-13", fin: "2026-05-18" },
     { debut: "2026-05-21", fin: "2026-05-24" },
     { debut: "2026-07-25", fin: "2026-08-24" }
-    
   ];
 
   const encartFermeture = document.getElementById("encartFermeture");
@@ -348,6 +371,7 @@ formReservation.addEventListener("submit", async e => {
   e.preventDefault();
 
   const btnSubmit = formReservation.querySelector('button[type="submit"]');
+  showWaiting(); // ← affiche la fenêtre d'attente
   btnSubmit.disabled = true;
 
   // Réinitialiser les couleurs
@@ -419,8 +443,11 @@ formReservation.addEventListener("submit", async e => {
     }
   }
 
-  if (erreur) return;
-
+  if (erreur) {
+    btnSubmit.disabled = false;
+    hideWaiting(); // ← masque la fenêtre d'attente
+    return;  
+  }
   const formData = new FormData(formReservation);
   const reservation = {
     nom_proprietaire: formData.get("nom_proprietaire"),
@@ -447,7 +474,7 @@ formReservation.addEventListener("submit", async e => {
   try {
     const { error } = await supabaseClient.from("reservations").insert([reservation]);
     if (error) throw error;
-
+/*
     const emailAloree = "a.l.oree.de.la.foret.37@gmail.com";
     await Promise.all([
       // Email pour le client
@@ -487,6 +514,18 @@ formReservation.addEventListener("submit", async e => {
     } catch(e) {
       console.log("WhatsApp non envoyé :", e);
     }
+*/
+    // Envoi Google Sheets
+    try {
+      console.log("Données envoyées :", JSON.stringify(reservation));
+      const params = encodeURIComponent(JSON.stringify(reservation));
+      await fetch(`https://script.google.com/macros/s/AKfycbwJNCfjlvAnSaa-BX93GtM5wwLRdcdeP9weHQfQbuU4u9_Xbs9PfXJawnm3PZplthKG/exec?data=${params}`, {
+        method: "GET",
+        mode: "no-cors"
+      });
+    } catch(e) {
+      console.log("Google Sheets non mis à jour :", e);
+    }
 
     showPopup(`Votre réservation a bien été enregistrée.<br><br>
       Arrivée : <strong>${formatDateFR(reservation.date_arrivee)} à ${reservation.heure_arrivee.replace(":", "h")}</strong><br>
@@ -508,6 +547,7 @@ formReservation.addEventListener("submit", async e => {
       || JSON.stringify(err);
     showPopup("Erreur : " + message);
   } finally {
+    hideWaiting(); // ← masque la fenêtre d'attente
     btnSubmit.disabled = false; // ← toujours réactivé, succès ou erreur
   }
 });   // fin du addEventListener submit
