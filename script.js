@@ -447,7 +447,6 @@ formReservation.addEventListener("submit", async e => {
     erreur = true;
   }
 
-  /* en commentaire pour Taiko
   const dateMax = new Date();
   dateMax.setMonth(dateMax.getMonth() + 6);
   const dateMaxStr = dateMax.toISOString().split("T")[0];
@@ -465,7 +464,7 @@ formReservation.addEventListener("submit", async e => {
     dateDepart.focus();
     erreur = true;
   }
-*/
+
   if (!erreur && dateArrivee.value === dateDepart.value) {
     if (heureDepart.value <= heureArrivee.value) {
       showPopup("L'heure de départ doit être postérieure à l'heure d'arrivée.");
