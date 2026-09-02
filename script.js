@@ -93,8 +93,7 @@ function hideWaiting() {
   ];
 
   const datesCompletes = [
-    { debut: "2026-07-26", fin: "2026-09-03" },
-    { debut: "2026-09-08", fin: "2026-09-20" }
+    { debut: "2026-07-26", fin: "2026-09-20" }
   ];
 
   const encartFermeture = document.getElementById("encartFermeture");
