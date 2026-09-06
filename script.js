@@ -257,7 +257,7 @@ function formatLocalDate(d) {
     nbChienInput.addEventListener("change", updateNomChiens);
 
     const horairesEte = {
-      lundi: [["09:00","14:00"],["17:00","18:45"]],
+      lundi: [["09:00","14:00"],["17:00","18:30"]],
       mardi: [["09:00","14:00"],["17:00","18:45"]],
       mercredi: [["09:00","14:00"],["17:00","18:45"]],
       jeudi: [["09:00","14:00"],["17:00","18:45"]],
