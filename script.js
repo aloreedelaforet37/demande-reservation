@@ -89,13 +89,13 @@ function hideWaiting() {
   // --- Périodes de fermeture ---
   const periodesFermees = [
     { debut: "2026-10-16", fin: "2026-10-24" },
-    { debut: "2026-12-19", fin: "2026-12-27" }
+    { debut: "2026-12-19", fin: "2026-12-27" },
+    { debut: "2026-11-11", fin: "2026-11-11" }
   ];
 
   const datesCompletes = [
     { debut: "2026-09-10", fin: "2026-09-21" },
-    { debut: "2026-09-25", fin: "2026-09-26" },
-    { debut: "2026-11-11", fin: "2026-11-11" }
+    { debut: "2026-09-25", fin: "2026-09-26" }
   ];
 
   const encartFermeture = document.getElementById("encartFermeture");
