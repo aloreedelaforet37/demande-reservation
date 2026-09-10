@@ -97,6 +97,10 @@ function hideWaiting() {
     { debut: "2026-09-10", fin: "2026-09-21" },
     { debut: "2026-09-25", fin: "2026-09-26" }
   ];
+  
+  const datesIndisponibles = [
+    "2026-11-11"
+  ];
 
   const encartFermeture = document.getElementById("encartFermeture");
 
@@ -131,6 +135,10 @@ function hideWaiting() {
       const d2 = new Date(p.fin);
       return date >= d1 && date <= d2;
     });
+}
+// fonction qui vérifie si la date n'est pas présente dans le tableau des dates "sans rdv"
+function isIndisponible(dateStr) {
+  return datesIndisponibles.includes(dateStr);
 }
 
 function crossesClosure(dateA, dateD) {
@@ -327,7 +335,7 @@ function isHeureEte(dateStr) {
 
     function updateHorairesArrivee() {
 
-      if (isClosed(dateArrivee.value)) {
+      if (isClosed(dateArrivee.value) || isIndisponible(dateArrivee.value)) {
         heureArrivee.innerHTML = "";
         return;
       }
@@ -348,7 +356,7 @@ function isHeureEte(dateStr) {
 
     function updateHorairesDepart() {
 
-      if (isClosed(dateDepart.value)) {
+      if (isClosed(dateDepart.value) || isIndisponible(dateDepart.value)) {
         heureDepart.innerHTML = "";
         return;
       }
@@ -423,6 +431,11 @@ formReservation.addEventListener("submit", async e => {
     dateArrivee.style.color = "red";
     dateArrivee.focus();
     erreur = true;
+  } else if (isIndisponible(dateArrivee.value)) {
+    showPopup("Cette date n'est pas disponible pour une arrivée, merci de choisir une autre date.");
+    dateArrivee.style.color = "red";
+    dateArrivee.focus();
+    erreur = true;
   }
 
   if (!erreur) {
@@ -433,6 +446,11 @@ formReservation.addEventListener("submit", async e => {
       erreur = true;
     } else if (isComplet(dateDepart.value)) {
       showPopup("Nous sommes complets le jour de la date de départ, n'hésitez pas à réserver sur une autre période ou à me contacter.");
+      dateDepart.style.color = "red";
+      dateDepart.focus();
+      erreur = true;
+    } else if (isIndisponible(dateDepart.value)) {
+      showPopup("Cette date n'est pas disponible pour un départ, merci de choisir une autre date.");
       dateDepart.style.color = "red";
       dateDepart.focus();
       erreur = true;
