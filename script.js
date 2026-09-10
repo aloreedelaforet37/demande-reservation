@@ -94,7 +94,8 @@ function hideWaiting() {
 
   const datesCompletes = [
     { debut: "2026-09-10", fin: "2026-09-21" },
-    { debut: "2026-09-25", fin: "2026-09-26" }
+    { debut: "2026-09-25", fin: "2026-09-26" },
+    { debut: "2026-11-11", fin: "2026-11-11" }
   ];
 
   const encartFermeture = document.getElementById("encartFermeture");
