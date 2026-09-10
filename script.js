@@ -334,12 +334,13 @@ function isHeureEte(dateStr) {
     }
 
     function updateHorairesArrivee() {
-
       if (isClosed(dateArrivee.value) || isIndisponible(dateArrivee.value)) {
-        heureArrivee.innerHTML = "";
+        heureArrivee.innerHTML = '<option value="" disabled selected>Date non disponible</option>';
+        heureArrivee.classList.add("select-indisponible");
         return;
       }
-
+      heureArrivee.classList.remove("select-indisponible");
+      
       if (isJourFerie(dateArrivee.value)) {
         fillHours(heureArrivee,[["17:00","18:00"]]);
         return;
@@ -357,9 +358,11 @@ function isHeureEte(dateStr) {
     function updateHorairesDepart() {
 
       if (isClosed(dateDepart.value) || isIndisponible(dateDepart.value)) {
-        heureDepart.innerHTML = "";
+        heureDepart.innerHTML = '<option value="" disabled selected>Date non disponible</option>';
+        heureDepart.classList.add("select-indisponible");
         return;
       }
+      heureDepart.classList.remove("select-indisponible");
 
       if (isJourFerie(dateDepart.value)) {
         fillHours(heureDepart,[["11:00","12:00"],["17:00","18:00"]]);
