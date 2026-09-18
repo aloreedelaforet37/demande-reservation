@@ -575,7 +575,7 @@ formReservation.addEventListener("submit", async e => {
         remarque: reservation.remarque
       })
     ]);
-
+/*
     // Envoi WhatsApp (séparé, ne bloque pas en cas d'échec)
     const texte = encodeURIComponent(
       `🐶 Nouvelle réservation pour ${reservation.nom_chien}\n` +
@@ -590,7 +590,29 @@ formReservation.addEventListener("submit", async e => {
     } catch(e) {
       console.log("WhatsApp non envoyé :", e);
     }
-
+*/
+    const texte =
+      `🐶 Nouvelle réservation pour ${reservation.nom_chien}\n` +
+      `👤 Propriétaire : ${reservation.nom_proprietaire}\n` +
+      `📧 Email : ${reservation.email}\n` +
+      `📅 Arrivée : ${formatDateFR(reservation.date_arrivee)} à ${reservation.heure_arrivee.replace(":", "h")}\n` +
+      `📅 Départ : ${formatDateFR(reservation.date_depart)} à ${reservation.heure_depart.replace(":", "h")}\n` +
+      `📝 Remarque : ${reservation.remarque}`;
+    
+    try {
+      const { data, error } = await supabase.functions.invoke("send-whatsapp", {
+        body: { texte },
+      });
+    
+      if (error || !data?.success) {
+        console.error("WhatsApp non envoyé :", error ?? data?.error);
+        // optionnel : afficher un toast d'alerte admin, ou logguer en base pour suivi
+      } else {
+        console.log("WhatsApp envoyé avec succès :", data.details);
+      }
+    } catch (e) {
+      console.error("Erreur appel Edge Function WhatsApp :", e);
+    }
     // Envoi Google Sheets
     try {
       console.log("Données envoyées :", JSON.stringify(reservation));
