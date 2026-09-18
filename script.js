@@ -600,7 +600,7 @@ formReservation.addEventListener("submit", async e => {
       `📝 Remarque : ${reservation.remarque}`;
     
     try {
-      const { data, error } = await supabase.functions.invoke("send-whatsapp", {
+      const { data, error } = await supabaseClient.functions.invoke("send-whatsapp", {
         body: { texte },
       });
     
