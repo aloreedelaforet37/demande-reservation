@@ -88,17 +88,29 @@ function hideWaiting() {
 
   // --- Périodes de fermeture ---
   const periodesFermees = [
+    { debut: "2026-07-03", fin: "2026-07-23" },
     { debut: "2026-10-16", fin: "2026-10-24" },
     { debut: "2026-12-19", fin: "2026-12-27" }
   ];
 
   const datesCompletes = [
-    { debut: "2026-09-25", fin: "2026-10-06" },
-    { debut: "2026-10-28", fin: "2026-11-01" }
+    { debut: "2026-07-26", fin: "2026-08-24" },
+    { debut: "2026-09-11", fin: "2026-09-12" }
   ];
-  
+
+  // Dates isolées non disponibles (arrivée ou départ), sans bloquer les séjours qui les traversent
   const datesIndisponibles = [
     "2026-11-11"
+  ];
+
+  // Chiens bloqués sur une période donnée, même si la période n'est pas "complète"
+  const chiensNonAutorises = [
+    { nom: "Doog", debut: "2026-11-01", fin: "2026-11-05" }
+  ];
+
+  // Chiens exceptionnellement autorisés sur une période marquée complète
+  const chiensAutorises = [
+    { nom: "Ma", debut: "2026-09-26", fin: "2026-09-27" }
   ];
 
   const encartFermeture = document.getElementById("encartFermeture");
@@ -135,12 +147,60 @@ function hideWaiting() {
       return date >= d1 && date <= d2;
     });
 }
-// fonction qui vérifie si la date n'est pas présente dans le tableau des dates "sans rdv"
-function isIndisponible(dateStr) {
-  return datesIndisponibles.includes(dateStr);
-}
 
-function crossesClosure(dateA, dateD) {
+  function isIndisponible(dateStr) {
+    return datesIndisponibles.includes(dateStr);
+  }
+
+  // --- Fonctions chiens autorisés / non autorisés ---
+  function isChienAutorise(nom, debut, fin) {
+    return chiensAutorises.some(c =>
+      c.nom.toLowerCase() === nom.toLowerCase().trim() &&
+      new Date(c.debut) <= new Date(debut) &&
+      new Date(c.fin) >= new Date(fin)
+    );
+  }
+
+  function isChienNonAutoriseSurPeriode(nom, dateArriveeStr, dateDepartStr) {
+    const dA = new Date(dateArriveeStr);
+    const dD = new Date(dateDepartStr);
+    return chiensNonAutorises.some(c => {
+      if (c.nom.toLowerCase() !== nom.toLowerCase().trim()) return false;
+      const d1 = new Date(c.debut);
+      const d2 = new Date(c.fin);
+      return dA <= d2 && dD >= d1; // chevauchement
+    });
+  }
+
+  // Remplace isComplet() pour les dates d'arrivée/départ : tient compte des chiens autorisés
+  function dateEstCompletePourChiens(dateStr, noms) {
+    if (!isComplet(dateStr)) return false;
+    const date = new Date(dateStr);
+    return datesCompletes
+      .filter(p => date >= new Date(p.debut) && date <= new Date(p.fin))
+      .some(p => !noms.every(n => isChienAutorise(n, p.debut, p.fin)));
+  }
+
+  function joinNoms(noms) {
+    const copie = [...noms];
+    if (copie.length === 0) return "chien inconnu";
+    if (copie.length === 1) return copie[0];
+    if (copie.length === 2) return copie.join(" et ");
+    const last = copie.pop();
+    return copie.join(", ") + " et " + last;
+  }
+
+  function getNomsChiens(formData) {
+    const nb = parseInt(formData.get("nb_chien")) || 1;
+    const noms = [];
+    for (let i = 1; i <= nb; i++) {
+      const n = formData.get(`nom_chien_input_${i}`);
+      if (n) noms.push(n.trim());
+    }
+    return noms;
+  }
+
+function crossesClosure(dateA, dateD, noms) {
   const dA = new Date(dateA);
   const dD = new Date(dateD);
 
@@ -151,11 +211,13 @@ function crossesClosure(dateA, dateD) {
     return dA < f1 && dD > f2;
   });
 
-  // Vérif périodes complètes
+  // Vérif périodes complètes (sauf si tous les chiens de la réservation sont autorisés sur cette période)
   const contientDateComplete = datesCompletes.some(p => {
     const d1 = new Date(p.debut);
     const d2 = new Date(p.fin);
-    return dA <= d2 && dD >= d1;
+    const chevauche = dA <= d2 && dD >= d1;
+    if (!chevauche) return false;
+    return !noms.every(n => isChienAutorise(n, p.debut, p.fin));
   });
 
   return traversePeriode || contientDateComplete;
@@ -266,11 +328,11 @@ function formatLocalDate(d) {
     nbChienInput.addEventListener("change", updateNomChiens);
 
     const horairesEte = {
-      lundi: [["09:00","14:00"],["17:00","18:30"]],
-      mardi: [["09:00","14:00"],["17:00","18:30"]],
-      mercredi: [["09:00","14:00"],["17:00","18:30"]],
-      jeudi: [["09:00","14:00"],["17:00","18:30"]],
-      vendredi: [["09:00","14:00"],["17:00","18:30"]],
+      lundi: [["09:00","14:00"],["17:00","18:45"]],
+      mardi: [["09:00","14:00"],["17:00","18:45"]],
+      mercredi: [["09:00","14:00"],["17:00","18:45"]],
+      jeudi: [["09:00","14:00"],["17:00","18:45"]],
+      vendredi: [["09:00","14:00"],["17:00","18:45"]],
       samedi: [["10:00","12:00"],["17:00","18:00"]],
       dimanche_arrivee: [["17:00","18:00"]],
       dimanche_depart: [["11:00","12:00"],["17:00","18:00"]]
@@ -279,9 +341,9 @@ function formatLocalDate(d) {
     const horairesHiver = {
       lundi: [["09:00","14:00"],["16:00","17:00"]],
       mardi: [["09:00","14:00"],["16:00","17:00"]],
-      mercredi: [["09:00","14:00"],["17:00","18:30"]],
-      jeudi: [["09:00","14:00"],["17:00","18:30"]],
-      vendredi: [["09:00","14:00"],["17:00","18:30"]],
+      mercredi: [["09:00","14:00"],["17:00","18:45"]],
+      jeudi: [["09:00","14:00"],["17:00","18:45"]],
+      vendredi: [["09:00","14:00"],["17:00","18:45"]],
       samedi: [["10:00","12:00"],["17:00","18:00"]],
       dimanche_arrivee: [["17:00","18:00"]],
       dimanche_depart: [["11:00","12:00"],["17:00","18:00"]]
@@ -333,13 +395,15 @@ function isHeureEte(dateStr) {
     }
 
     function updateHorairesArrivee() {
+
       if (isClosed(dateArrivee.value) || isIndisponible(dateArrivee.value)) {
         heureArrivee.innerHTML = '<option value="" disabled selected>Date non disponible</option>';
         heureArrivee.classList.add("select-indisponible");
         return;
       }
+
       heureArrivee.classList.remove("select-indisponible");
-      
+
       if (isJourFerie(dateArrivee.value)) {
         fillHours(heureArrivee,[["17:00","18:00"]]);
         return;
@@ -361,6 +425,7 @@ function isHeureEte(dateStr) {
         heureDepart.classList.add("select-indisponible");
         return;
       }
+
       heureDepart.classList.remove("select-indisponible");
 
       if (isJourFerie(dateDepart.value)) {
@@ -420,6 +485,9 @@ formReservation.addEventListener("submit", async e => {
   dateArrivee.style.color = "";
   dateDepart.style.color = "";
 
+  const formData = new FormData(formReservation);
+  const nomsChiens = getNomsChiens(formData);
+
   let erreur = false;
 
   // Contrôle des dates
@@ -428,13 +496,13 @@ formReservation.addEventListener("submit", async e => {
     dateArrivee.style.color = "red";
     dateArrivee.focus();
     erreur = true;
-  } else if (isComplet(dateArrivee.value)) {
-    showPopup("Nous sommes complets le jour de la date d'arrivée, n'hésitez pas à réserver sur une autre période ou à me contacter.");
+  } else if (isIndisponible(dateArrivee.value)) {
+    showPopup("Cette date n'est pas disponible pour une arrivée, merci de choisir une autre date.");
     dateArrivee.style.color = "red";
     dateArrivee.focus();
     erreur = true;
-  } else if (isIndisponible(dateArrivee.value)) {
-    showPopup("Cette date n'est pas disponible pour une arrivée, merci de choisir une autre date.");
+  } else if (dateEstCompletePourChiens(dateArrivee.value, nomsChiens)) {
+    showPopup("Nous sommes complets le jour de la date d'arrivée, n'hésitez pas à réserver sur une autre période ou à me contacter.");
     dateArrivee.style.color = "red";
     dateArrivee.focus();
     erreur = true;
@@ -446,20 +514,20 @@ formReservation.addEventListener("submit", async e => {
       dateDepart.style.color = "red";
       dateDepart.focus();
       erreur = true;
-    } else if (isComplet(dateDepart.value)) {
-      showPopup("Nous sommes complets le jour de la date de départ, n'hésitez pas à réserver sur une autre période ou à me contacter.");
+    } else if (isIndisponible(dateDepart.value)) {
+      showPopup("Cette date n'est pas disponible pour un départ, merci de choisir une autre date.");
       dateDepart.style.color = "red";
       dateDepart.focus();
       erreur = true;
-    } else if (isIndisponible(dateDepart.value)) {
-      showPopup("Cette date n'est pas disponible pour un départ, merci de choisir une autre date.");
+    } else if (dateEstCompletePourChiens(dateDepart.value, nomsChiens)) {
+      showPopup("Nous sommes complets le jour de la date de départ, n'hésitez pas à réserver sur une autre période ou à me contacter.");
       dateDepart.style.color = "red";
       dateDepart.focus();
       erreur = true;
     }
   }
 
-  if (!erreur && crossesClosure(dateArrivee.value, dateDepart.value)) {
+  if (!erreur && crossesClosure(dateArrivee.value, dateDepart.value, nomsChiens)) {
     showPopup("Votre séjour ne peut pas traverser une période de fermeture ou de période complète.");
     dateArrivee.style.color = "red";
     dateDepart.style.color = "red";
@@ -467,6 +535,21 @@ formReservation.addEventListener("submit", async e => {
     erreur = true;
   }
 
+  // Chien(s) non autorisé(s) sur la période demandée
+  if (!erreur) {
+    const chienBloque = nomsChiens.some(n =>
+      isChienNonAutoriseSurPeriode(n, dateArrivee.value, dateDepart.value)
+    );
+    if (chienBloque) {
+      showPopup("Nous sommes complets sur cette période, n'hésitez pas à réserver sur une autre période ou à me contacter.");
+      dateArrivee.style.color = "red";
+      dateDepart.style.color = "red";
+      dateArrivee.focus();
+      erreur = true;
+    }
+  }
+
+  /* en commentaire pour Taiko
   const dateMax = new Date();
   dateMax.setMonth(dateMax.getMonth() + 6);
   const dateMaxStr = dateMax.toISOString().split("T")[0];
@@ -484,7 +567,7 @@ formReservation.addEventListener("submit", async e => {
     dateDepart.focus();
     erreur = true;
   }
-
+*/
   if (!erreur && dateArrivee.value === dateDepart.value) {
     if (heureDepart.value <= heureArrivee.value) {
       showPopup("L'heure de départ doit être postérieure à l'heure d'arrivée.");
@@ -497,26 +580,14 @@ formReservation.addEventListener("submit", async e => {
 
   if (erreur) {
     // Construit l'objet reservation pour l'email d'alerte (même structure que le mail admin)
-    const formDataAlert = new FormData(formReservation);
-    const nbAlert = parseInt(formDataAlert.get("nb_chien")) || 1;
-    const nomsAlert = [];
-    for (let i = 1; i <= nbAlert; i++) {
-      const n = formDataAlert.get(`nom_chien_input_${i}`);
-      if (n) nomsAlert.push(n);
-    }
-    let nomChienAlert;
-    if (nomsAlert.length === 0) nomChienAlert = "chien inconnu";
-    else if (nomsAlert.length === 1) nomChienAlert = nomsAlert[0];
-    else if (nomsAlert.length === 2) nomChienAlert = nomsAlert.join(" et ");
-    else { const last = nomsAlert.pop(); nomChienAlert = nomsAlert.join(", ") + " et " + last; }
     const reservationAlert = {
-      nom_proprietaire: formDataAlert.get("nom_proprietaire") || "inconnu",
-      nom_chien: nomChienAlert,
-      date_arrivee: formDataAlert.get("date_arrivee") || dateArrivee.value,
-      heure_arrivee: formDataAlert.get("heure_arrivee") || heureArrivee.value || "00:00",
-      date_depart: formDataAlert.get("date_depart") || dateDepart.value,
-      heure_depart: formDataAlert.get("heure_depart") || heureDepart.value || "00:00",
-      remarque: formDataAlert.get("remarque") || ""
+      nom_proprietaire: formData.get("nom_proprietaire") || "inconnu",
+      nom_chien: joinNoms(nomsChiens),
+      date_arrivee: formData.get("date_arrivee") || dateArrivee.value,
+      heure_arrivee: formData.get("heure_arrivee") || heureArrivee.value || "00:00",
+      date_depart: formData.get("date_depart") || dateDepart.value,
+      heure_depart: formData.get("heure_depart") || heureDepart.value || "00:00",
+      remarque: formData.get("remarque") || ""
     };
     sendAlertEmail(reservationAlert);
     sendAlertWhatsApp(reservationAlert);
@@ -525,28 +596,18 @@ formReservation.addEventListener("submit", async e => {
     hideWaiting(); // ← masque la fenêtre d'attente
     return;  
   }
-  const formData = new FormData(formReservation);
+
   const reservation = {
     nom_proprietaire: formData.get("nom_proprietaire"),
     email: formData.get("email"),
     nb_chien: parseInt(formData.get("nb_chien")) || 1,
-    nom_chien: [],
+    nom_chien: joinNoms(nomsChiens),
     date_arrivee: formData.get("date_arrivee"),
     heure_arrivee: formData.get("heure_arrivee"),
     date_depart: formData.get("date_depart"),
     heure_depart: formData.get("heure_depart"),
     remarque: formData.get("remarque")
   };
-
-  for (let i = 1; i <= reservation.nb_chien; i++)
-    reservation.nom_chien.push(formData.get(`nom_chien_input_${i}`));
-
-  if (reservation.nom_chien.length === 1) reservation.nom_chien = reservation.nom_chien[0];
-  else if (reservation.nom_chien.length === 2) reservation.nom_chien = reservation.nom_chien.join(" et ");
-  else {
-    const last = reservation.nom_chien.pop();
-    reservation.nom_chien = reservation.nom_chien.join(", ") + " et " + last;
-  }
 
   try {
     const { error } = await supabaseClient.from("reservations").insert([reservation]);
@@ -575,7 +636,7 @@ formReservation.addEventListener("submit", async e => {
         remarque: reservation.remarque
       })
     ]);
-/*
+
     // Envoi WhatsApp (séparé, ne bloque pas en cas d'échec)
     const texte = encodeURIComponent(
       `🐶 Nouvelle réservation pour ${reservation.nom_chien}\n` +
@@ -590,29 +651,7 @@ formReservation.addEventListener("submit", async e => {
     } catch(e) {
       console.log("WhatsApp non envoyé :", e);
     }
-*/
-    const texte =
-      `🐶 Nouvelle réservation pour ${reservation.nom_chien}\n` +
-      `👤 Propriétaire : ${reservation.nom_proprietaire}\n` +
-      `📧 Email : ${reservation.email}\n` +
-      `📅 Arrivée : ${formatDateFR(reservation.date_arrivee)} à ${reservation.heure_arrivee.replace(":", "h")}\n` +
-      `📅 Départ : ${formatDateFR(reservation.date_depart)} à ${reservation.heure_depart.replace(":", "h")}\n` +
-      `📝 Remarque : ${reservation.remarque}`;
-    
-    try {
-      const { data, error } = await supabaseClient.functions.invoke("send-whatsapp", {
-        body: { texte },
-      });
-    
-      if (error || !data?.success) {
-        console.error("WhatsApp non envoyé :", error ?? data?.error);
-        // optionnel : afficher un toast d'alerte admin, ou logguer en base pour suivi
-      } else {
-        console.log("WhatsApp envoyé avec succès :", data.details);
-      }
-    } catch (e) {
-      console.error("Erreur appel Edge Function WhatsApp :", e);
-    }
+
     // Envoi Google Sheets
     try {
       console.log("Données envoyées :", JSON.stringify(reservation));
