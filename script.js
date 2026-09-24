@@ -110,7 +110,7 @@ function hideWaiting() {
 
   // Chiens exceptionnellement autorisés sur une période marquée complète
   const chiensAutorises = [
-    { nom: "Ma", debut: "2026-09-26", fin: "2026-09-27" }
+    { nom: "Ma", debut: "2026-09-24", fin: "2026-09-27" }
   ];
 
   const encartFermeture = document.getElementById("encartFermeture");
