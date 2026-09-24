@@ -88,7 +88,6 @@ function hideWaiting() {
 
   // --- Périodes de fermeture ---
   const periodesFermees = [
-    { debut: "2026-07-03", fin: "2026-07-23" },
     { debut: "2026-10-16", fin: "2026-10-24" },
     { debut: "2026-12-19", fin: "2026-12-27" }
   ];
@@ -173,12 +172,10 @@ function hideWaiting() {
   }
 
   // Remplace isComplet() pour les dates d'arrivée/départ : tient compte des chiens autorisés
+  // L'autorisation est comparée à la date demandée, pas à toute la période complète déclarée
   function dateEstCompletePourChiens(dateStr, noms) {
     if (!isComplet(dateStr)) return false;
-    const date = new Date(dateStr);
-    return datesCompletes
-      .filter(p => date >= new Date(p.debut) && date <= new Date(p.fin))
-      .some(p => !noms.every(n => isChienAutorise(n, p.debut, p.fin)));
+    return !noms.every(n => isChienAutorise(n, dateStr, dateStr));
   }
 
   function joinNoms(noms) {
@@ -211,13 +208,13 @@ function crossesClosure(dateA, dateD, noms) {
     return dA < f1 && dD > f2;
   });
 
-  // Vérif périodes complètes (sauf si tous les chiens de la réservation sont autorisés sur cette période)
+  // Vérif périodes complètes (sauf si tous les chiens de la réservation sont autorisés sur le séjour demandé)
   const contientDateComplete = datesCompletes.some(p => {
     const d1 = new Date(p.debut);
     const d2 = new Date(p.fin);
     const chevauche = dA <= d2 && dD >= d1;
     if (!chevauche) return false;
-    return !noms.every(n => isChienAutorise(n, p.debut, p.fin));
+    return !noms.every(n => isChienAutorise(n, dateA, dateD));
   });
 
   return traversePeriode || contientDateComplete;
