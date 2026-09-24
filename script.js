@@ -93,8 +93,8 @@ function hideWaiting() {
   ];
 
   const datesCompletes = [
-    { debut: "2026-09-10", fin: "2026-09-21" },
-    { debut: "2026-09-25", fin: "2026-10-06" }
+    { debut: "2026-09-25", fin: "2026-10-06" },
+    { debut: "2026-10-28", fin: "2026-11-01" }
   ];
   
   const datesIndisponibles = [
