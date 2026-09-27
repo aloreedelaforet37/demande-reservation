@@ -112,6 +112,9 @@ function hideWaiting() {
     { nom: "Ma", debut: "2026-09-24", fin: "2026-09-27" }
   ];
 
+  // Chiens exceptionnellement autorisés à réserver au-delà de la limite de 6 mois
+  const chiensSansLimiteAvance = ["Doog", "Ma"]; // ← liste des noms concernés
+
   const encartFermeture = document.getElementById("encartFermeture");
 
   if (encartFermeture) {
@@ -170,6 +173,11 @@ function hideWaiting() {
       return dA <= d2 && dD >= d1; // chevauchement
     });
   }
+
+  // Tiens compte de la liste des chiens non bloqué dans la limite des 6 mois
+  function isChienSansLimiteAvance(nom) {
+  return chiensSansLimiteAvance.some(n => n.toLowerCase() === nom.toLowerCase().trim());
+}
 
   // Remplace isComplet() pour les dates d'arrivée/départ : tient compte des chiens autorisés
   // L'autorisation est comparée à la date demandée, pas à toute la période complète déclarée
@@ -550,20 +558,22 @@ formReservation.addEventListener("submit", async e => {
   dateMax.setMonth(dateMax.getMonth() + 6);
   const dateMaxStr = dateMax.toISOString().split("T")[0];
 
-  if (!erreur && dateArrivee.value > dateMaxStr) {
-    showPopup("La réservation n'est pas ouverte plus de 6 mois avant la date souhaitée.");
-    dateArrivee.style.color = "red";
-    dateArrivee.focus();
-    erreur = true;
-  }
+  const tousChiensExemptes = nomsChiens.every(n => isChienSansLimiteAvance(n));
 
-  if (!erreur && dateDepart.value > dateMaxStr) {
-    showPopup("La réservation n'est pas ouverte plus de 6 mois avant la date souhaitée.");
-    dateDepart.style.color = "red";
-    dateDepart.focus();
-    erreur = true;
-  }
+if (!erreur && !tousChiensExemptes && dateArrivee.value > dateMaxStr) {
+  showPopup("La réservation n'est pas ouverte plus de 6 mois avant la date souhaitée.");
+  dateArrivee.style.color = "red";
+  dateArrivee.focus();
+  erreur = true;
+}
 
+if (!erreur && !tousChiensExemptes && dateDepart.value > dateMaxStr) {
+  showPopup("La réservation n'est pas ouverte plus de 6 mois avant la date souhaitée.");
+  dateDepart.style.color = "red";
+  dateDepart.focus();
+  erreur = true;
+}
+  
   if (!erreur && dateArrivee.value === dateDepart.value) {
     if (heureDepart.value <= heureArrivee.value) {
       showPopup("L'heure de départ doit être postérieure à l'heure d'arrivée.");
