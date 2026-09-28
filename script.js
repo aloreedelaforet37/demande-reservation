@@ -113,7 +113,7 @@ function hideWaiting() {
   ];
 
   // Chiens exceptionnellement autorisés à réserver au-delà de la limite de 6 mois
-  const chiensSansLimiteAvance = ["Doog", "Ma"]; // ← liste des noms concernés
+  const chiensSansLimiteAvance = ["Ma"]; // ← liste des noms concernés
 
   const encartFermeture = document.getElementById("encartFermeture");
 
