@@ -104,7 +104,8 @@ function hideWaiting() {
 
   // Chiens bloqués sur une période donnée, même si la période n'est pas "complète"
   const chiensNonAutorises = [
-    { nom: "Doog", debut: "2026-11-01", fin: "2026-11-05" }
+    { nom: "Doog", debut: "2026-11-01", fin: "2026-11-05" },
+    { nom: "Toutatis", debut: "2026-11-01", fin: "2050-12-31" }
   ];
 
   // Chiens exceptionnellement autorisés sur une période marquée complète
