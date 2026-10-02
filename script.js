@@ -339,7 +339,6 @@ function formatLocalDate(d) {
         nomsChiensContainer.appendChild(div);
       }
     }
-
     updateNomChiens();
     nbChienInput.addEventListener("change", updateNomChiens);
 
