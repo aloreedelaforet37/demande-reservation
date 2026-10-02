@@ -7,3 +7,4 @@ window.APP_CONFIG = {
     autoRefreshToken: false
   }
 };
+test main
