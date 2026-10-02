@@ -12,13 +12,9 @@ if ('serviceWorker' in navigator) {
 window.addEventListener('DOMContentLoaded', () => {
 
   // --- Supabase ---
-  const SUPABASE_URL = 'https://usatdvopaaxrxjiqhgju.supabase.co';
-  const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InVzYXRkdm9wYWF4cnhqaXFoZ2p1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTk1MjUzNDUsImV4cCI6MjA3NTEwMTM0NX0.D52GPw5yZUJWN1oZD_sop7F7nU9WZLM5OMof1TI3IMc';
+  const { SUPABASE_URL, SUPABASE_ANON_KEY, AUTH_OPTIONS } = window.APP_CONFIG;
   const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
-  auth: {
-    persistSession: false,
-    autoRefreshToken: false
-  }
+    auth: AUTH_OPTIONS
 });
 
   // --- EmailJS ---
