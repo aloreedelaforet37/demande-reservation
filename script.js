@@ -101,7 +101,6 @@ function hideWaiting() {
       `📝 Remarque : ${reservation.remarque}`
     );
   };
-  }
 
   // --- Périodes de fermeture ---
   const periodesFermees = [
