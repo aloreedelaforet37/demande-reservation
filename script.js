@@ -563,7 +563,6 @@ formReservation.addEventListener("submit", async e => {
   const dateMax = new Date();
   dateMax.setMonth(dateMax.getMonth() + 6);
   const dateMaxStr = dateMax.toISOString().split("T")[0];
-
   const tousChiensExemptes = nomsChiens.every(n => isChienSansLimiteAvance(n));
 
 if (!erreur && !tousChiensExemptes && dateArrivee.value > dateMaxStr) {
@@ -658,12 +657,6 @@ if (!erreur && !tousChiensExemptes && dateDepart.value > dateMaxStr) {
       `📅 Départ : ${formatDateFR(reservation.date_depart)} à ${reservation.heure_depart.replace(":", "h")}\n` +
       `📝 Remarque : ${reservation.remarque}`
     );
-    try {
-      await fetch(`https://api.callmebot.com/whatsapp.php?phone=33627363788&text=${texte}&apikey=1089744`, { mode: "no-cors" });
-    } catch(e) {
-      console.log("WhatsApp non envoyé :", e);
-    }
-
     // Envoi Google Sheets
     try {
       console.log("Données envoyées :", JSON.stringify(reservation));
