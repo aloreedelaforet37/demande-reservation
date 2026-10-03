@@ -101,11 +101,6 @@ function hideWaiting() {
       `📝 Remarque : ${reservation.remarque}`
     );
   };
-    try {
-      await fetch(`https://api.callmebot.com/whatsapp.php?phone=33627363788&text=${texte}&apikey=1089744`, { mode: "no-cors" });
-    } catch(e) {
-      console.log("WhatsApp d'alerte non envoyé :", e);
-    }
   }
 
   // --- Périodes de fermeture ---
