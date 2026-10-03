@@ -17,6 +17,21 @@ window.addEventListener('DOMContentLoaded', () => {
     auth: AUTH_OPTIONS
 });
 
+  // --- Notification Telegram (via Edge Function send-whatsapp) ---
+  async function sendTelegram(texte) {
+    if (!window.APP_CONFIG.NOTIF_TELEGRAM) return; // interrupteur
+    try {
+      const { error } = await supabaseClient.functions.invoke("send-whatsapp", {
+        body: { texte }
+      });
+      if (error) throw error;
+    } catch (e) {
+      let detail = e;
+      try { detail = await e.context.json(); } catch (_) {}
+      console.log("Telegram non envoyé :", detail);
+    }
+  }
+
   // --- EmailJS ---
   if (typeof emailjs !== "undefined") emailjs.init("t6YY80T3DDql9uy32");
 
@@ -77,7 +92,7 @@ function hideWaiting() {
 
   // --- WhatsApp d'alerte période fermée/complète ---
   async function sendAlertWhatsApp(reservation) {
-    const texte = encodeURIComponent(
+    await sendTelegram(
       `⚠️ Tentative de réservation sur période fermée/complète\n` +
       `🐶 Chien(s) : ${reservation.nom_chien}\n` +
       `👤 Propriétaire : ${reservation.nom_proprietaire}\n` +
@@ -85,12 +100,7 @@ function hideWaiting() {
       `📅 Départ : ${formatDateFR(reservation.date_depart)} à ${reservation.heure_depart.replace(":", "h")}\n` +
       `📝 Remarque : ${reservation.remarque}`
     );
-    try {
-      await fetch(`https://api.callmebot.com/whatsapp.php?phone=33627363788&text=${texte}&apikey=1089744`, { mode: "no-cors" });
-    } catch(e) {
-      console.log("WhatsApp d'alerte non envoyé :", e);
-    }
-  }
+  };
 
   // --- Périodes de fermeture ---
   const periodesFermees = [
@@ -649,7 +659,7 @@ if (!erreur && !tousChiensExemptes && dateDepart.value > dateMaxStr) {
     ]);
 
     // Envoi WhatsApp (séparé, ne bloque pas en cas d'échec)
-    const texte = encodeURIComponent(
+    await sendTelegram(
       `🐶 Nouvelle réservation pour ${reservation.nom_chien}\n` +
       `👤 Propriétaire : ${reservation.nom_proprietaire}\n` +
       `📧 Email : ${reservation.email}\n` +
