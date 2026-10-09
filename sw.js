@@ -1,5 +1,5 @@
-const VERSION = 'v2026-10-01-1';   // à changer à chaque déploiement
-const CACHE = 'kennel-' + VERSION;
+const VERSION = 'v2026-10-10-1';   // à changer à chaque déploiement
+const CACHE = 'ke²²nnel-' + VERSION;
 
 self.addEventListener('install', (e) => {
   self.skipWaiting();               // active tout de suite le nouveau SW
